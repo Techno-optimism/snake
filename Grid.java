@@ -1,28 +1,46 @@
 import javafx.application.Application;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;   
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 public class Grid extends Application {
-    Button button;
-    public static void main(String[] args) {
-        launch(args);
-    }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
-        primaryStage.setTitle("Snek");
-        button = new Button();
-        button.setText("Click me");
+    public void start(Stage stage) {
+        GridPane pane = new GridPane();
 
-        StackPane layout = new StackPane();
-        layout.getChildren().add(button);
+        int n = 15;
+        int m = 12;
+        int cellSize = 50;
 
-        Scene scene = new Scene(layout, 300, 250);
-        primaryStage.setScene(scene);
-        primaryStage.show();
+        for (int col = 0; col < n; col++) {
+            for (int row = 0; row < m; row++) {
+                Rectangle cell = new Rectangle(cellSize, cellSize);
+                cell.setFill(Color.web("#f4c064"));
+                cell.setStroke(Color.web("#c0a060"));
+                pane.add(cell, col, row);      
+            }
+        }
+
+        int sceneWidth  = n * cellSize;
+        int sceneHeight = m * cellSize;
+
+        Scene scene = new Scene(pane, sceneWidth, sceneHeight);
+        stage.setScene(scene);
+        stage.setResizable(false);
+        stage.sizeToScene();
+
+        stage.show();
+    }
+
+    // #1b5e20 (snake color)
+    // #ff5555 (bright food color)
+    // #b71c1c (darker food color)
+    // #c0a060 (grid color)
+
+    public static void main(String[] args) {
+        launch(args);
     }
 }
