@@ -13,6 +13,8 @@ public class Gui extends Application {
         pane.addRow(0, new Rectangle(800/n,800/n,Color.GREEN));
         pane.addColumn(0, new Rectangle(800/m,800/m,Color.RED));
         pane.addColumn(1, new Rectangle(800/m,800/m,Color.RED));
+        pane.add(new Rectangle(50,50,Color.BLUE), m-2, n-2);
+        pane.add(new Rectangle(50,50,Color.BLUE), m-1, n-2);
         pane.add(new Rectangle(50,50,Color.BLUE), m, n);
 
 
