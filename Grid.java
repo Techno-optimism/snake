@@ -32,20 +32,27 @@ public class Grid extends Application {
 
     private int rows;
     private int columns;
+    private Label scoreLabel;
+    private Label highScoreLabel;
 
     @Override
     public void start(Stage stage) {
         BorderPane mainLayout = new BorderPane();
 
         // Top bar
-        HBox topBar = new HBox();
+        HBox topBar = new HBox(50);
         topBar.setPrefHeight(50);
-        topBar.setStyle("-fx-background-color: white; -fx-alignment: center;");
+        topBar.setStyle("-fx-background-color: white; -fx-alignment: CENTER;");
 
         // Score label
-        Label scoreLabel = new Label("Score: 0");
+        scoreLabel = new Label("Score: 0");
         scoreLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: black;");
-        topBar.getChildren().add(scoreLabel);
+
+        // High score label
+        highScoreLabel = new Label("High Score: 0");
+        highScoreLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: black;");
+
+        topBar.getChildren().addAll(scoreLabel, highScoreLabel);
 
         // Game area (stackpane)
         StackPane gameArea = new StackPane();
@@ -80,6 +87,7 @@ public class Grid extends Application {
 
             // On restart click
             () -> {
+                scoreLabel.setText("Score: 0");
                 game.reset();
                 gameSizeScreen.show();
             },
@@ -140,6 +148,9 @@ public class Grid extends Application {
             }
         }
 
+        int currentScore = game.getSnake().size() - 2;
+        scoreLabel.setText("Score: " + currentScore);
+
         // Draw snake
         for (Point p : game.getSnake()) {
             cells[p.x][p.y].setFill(Color.web("#1b5e20"));   
@@ -162,6 +173,14 @@ public class Grid extends Application {
 
                 if (game.isGameOver()) {
                     gameOverScreen.show();
+
+                    // Update high score if beaten
+                    int finalScore = game.getSnake().size() - 2;
+                    int previousHighScore = Integer.parseInt(highScoreLabel.getText().split(": ")[1]);
+                    if (finalScore > previousHighScore) {
+                        highScoreLabel.setText("High Score: " + finalScore);
+                    }
+
                     loop.stop();
                 }
             })
@@ -196,7 +215,7 @@ public class Grid extends Application {
                 Rectangle cell = new Rectangle(cellSize, cellSize);
                 cell.setFill(Color.web("#f4c064"));
                 cell.setStroke(Color.web("#c0a060"));
-                cell.setStrokeWidth(1);
+                cell.setStrokeWidth(1.0);
                 cell.setStrokeType(StrokeType.INSIDE); // Stroke inside to avoid increasing size of each cell
                 gameGrid.add(cell, col, row);
                 cells[col][row] = cell;    
