@@ -3,7 +3,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Random;
 
-public class SnakeGame {
+public class SimpleSnakeGame {
     private final int width;
     private final int height;
 
@@ -14,7 +14,7 @@ public class SnakeGame {
 
     private final Random random = new Random();
 
-    public SnakeGame(int width, int height) {
+    public SimpleSnakeGame(int width, int height) {
         this.width = width;
         this.height = height;
 
@@ -23,16 +23,16 @@ public class SnakeGame {
 
         snake = new ArrayDeque<>();
 
-        // Head
+        // head
         snake.addFirst(new Point(cx, cy));
-        // Body
+        // body
         snake.addLast(new Point(cx, cy + 1));
 
-        // Initial direction is LEFT
+        // initial direction is LEFT
         direction = Direction.LEFT;
         gameOver = false;
 
-        // First food
+        // first food
         spawnFood(); 
     }
 
@@ -53,13 +53,6 @@ public class SnakeGame {
         Point newHead = new Point(x, y);
 
         // Checks
-
-        // Wall collision
-        // x and y cant be equal to width or height (because of 0 indexing)
-        if (x < 0 || x >= width || y < 0 || y >= height) {
-            gameOver = true;
-            return;
-        }
 
         // Self collision
         if (snake.contains(newHead)) {
@@ -102,38 +95,16 @@ public class SnakeGame {
     }
 
     public void spawnFood() {
-        // Runs until a valid food position is found
+        // Any cell not on snake
         while (true) {
             int fx = random.nextInt(width);
             int fy = random.nextInt(height);
             Point candidate = new Point(fx, fy);
-            // Any cell not on snake becomes food
             if (!snake.contains(candidate)) {
                 food = candidate;
                 return;
             }
         }
-    }
-
-    // Reset method called on restart click
-    // Resets snake, direction, food, and gameOver state
-    public void reset() {
-        snake.clear();
-
-        int cx = width / 2;
-        int cy = height / 2;
-
-        // Initial head
-        snake.addFirst(new Point(cx, cy));
-        // Inital tail
-        snake.addLast(new Point(cx, cy + 1));
-
-        // Initial direction is left
-        direction = Direction.LEFT;
-        gameOver = false;
-
-        // Initial food
-        spawnFood(); 
     }
 
     public enum Direction {
