@@ -3,8 +3,10 @@ import javafx.scene.Scene;
 // import javafx.scene.control.skin.TextInputControlSkin.Direction;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.StrokeType;
 import javafx.stage.Stage;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -12,6 +14,9 @@ import javafx.util.Duration;
 import java.awt.Point;
 import java.util.ArrayDeque;
 import javafx.geometry.Pos;
+import javafx.scene.control.Label;
+import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
 
 
 public class Grid extends Application {
@@ -30,17 +35,37 @@ public class Grid extends Application {
 
     @Override
     public void start(Stage stage) {
-        StackPane root = new StackPane();
+        BorderPane mainLayout = new BorderPane();
+
+        // Top bar
+        HBox topBar = new HBox();
+        topBar.setPrefHeight(50);
+        topBar.setStyle("-fx-background-color: white; -fx-alignment: center;");
+
+        // Score label
+        Label scoreLabel = new Label("Score: 0");
+        scoreLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: black;");
+        topBar.getChildren().add(scoreLabel);
+
+        // Game area (stackpane)
+        StackPane gameArea = new StackPane();
+
         gameGrid = new GridPane();
         gameGrid.setAlignment(Pos.CENTER);
 
-        // Makes the scene really big so we can have larger grids
-        // The stackpane will center the grid in the window
-        Scene scene = new Scene(root, 1000, 1000);
-        stage.setScene(scene);
-        stage.setResizable(false);
+        // Add the grid to the game area; screens are added after they're constructed
+        gameArea.getChildren().add(gameGrid);
+
+        // Assemble BorderPane
+        mainLayout.setTop(topBar);
+        mainLayout.setCenter(gameArea);
+
+        // Create scene and set up stage
+        Scene scene = new Scene(mainLayout, 1000, 1050);
 
         scene.setOnKeyPressed(event -> {
+            if (game == null) return;
+
             switch (event.getCode()) {
                 case UP -> game.setDirection(SnakeGame.Direction.UP);
                 case DOWN -> game.setDirection(SnakeGame.Direction.DOWN);
@@ -88,13 +113,16 @@ public class Grid extends Application {
             }
         );
 
-        // The game grid, game overscreen and difficulty screen are added to the root StackPane
-        // The game overscreen and difficulty screen are added last so they're on top of the grid
-        root.getChildren().addAll(gameGrid, gameOverScreen, gameSizeScreen, difficultyScreen);
+        stage.setScene(scene);
+        stage.setTitle("Snake Game");
+        stage.setResizable(false);
+
+        // The screens are added to the game area
+        gameArea.getChildren().addAll(gameOverScreen, gameSizeScreen, difficultyScreen);
+
+        // Show the first screen
         gameSizeScreen.show();
-
         stage.show();
-
     }
 
     // #1b5e20 (snake color)
@@ -149,15 +177,27 @@ public class Grid extends Application {
         // Clear the old grid if it exists
         gameGrid.getChildren().clear();
 
+        // Initialize cells and game
         cells = new Rectangle[rows][columns];
         game = new SnakeGame(rows, columns);
 
-        int cellSize = 50;
+        double availableSize = 900.0;
+        double sizeBasedOnWidth = availableSize / columns;
+        double sizeBasedOnHeight = availableSize / rows;
+        double cellSize = Math.floor(Math.min(sizeBasedOnWidth, sizeBasedOnHeight));
+
+        // Avoid gaps from GridPane spacing
+        gameGrid.setHgap(0);
+        gameGrid.setVgap(0);
+
+        // Create grid cells
         for (int col = 0; col < rows; col++) {
             for (int row = 0; row < columns; row++) {
                 Rectangle cell = new Rectangle(cellSize, cellSize);
                 cell.setFill(Color.web("#f4c064"));
                 cell.setStroke(Color.web("#c0a060"));
+                cell.setStrokeWidth(1);
+                cell.setStrokeType(StrokeType.INSIDE); // Stroke inside to avoid increasing size of each cell
                 gameGrid.add(cell, col, row);
                 cells[col][row] = cell;    
             }

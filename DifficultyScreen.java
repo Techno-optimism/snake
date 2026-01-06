@@ -63,6 +63,7 @@ public class DifficultyScreen extends StackPane {
 
         // Add to StackPane, so menu is on top of overlay
         this.getChildren().addAll(overlay, menu);
+        this.setVisible(false); // Hidden by default
 
     }
 

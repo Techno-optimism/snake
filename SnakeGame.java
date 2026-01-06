@@ -13,6 +13,7 @@ public class SnakeGame {
     private boolean gameOver;
 
     private final Random random = new Random();
+    private Deque<Direction> inputQueue = new ArrayDeque<>();
 
     public SnakeGame(int width, int height) {
         this.width = width;
@@ -36,8 +37,28 @@ public class SnakeGame {
         spawnFood(); 
     }
 
+    public void setDirection(Direction newDir) {
+        if (inputQueue.size() < 2) {
+            inputQueue.addLast(newDir);
+        }
+    }
+
     public void step() {
         if (gameOver) return;
+
+        if (!inputQueue.isEmpty()) {
+            Direction nextMove = inputQueue.removeFirst();
+
+            boolean isOpposite = 
+                (direction == Direction.UP && nextMove == Direction.DOWN) ||
+                (direction == Direction.DOWN && nextMove == Direction.UP) ||
+                (direction == Direction.LEFT && nextMove == Direction.RIGHT) ||
+                (direction == Direction.RIGHT && nextMove == Direction.LEFT);
+
+            if (!isOpposite) {
+                direction = nextMove; // Update direction if valid
+            }
+        }
 
         Point head = snake.peekFirst();
         int x = head.x;
@@ -80,15 +101,6 @@ public class SnakeGame {
         }
     }
 
-    public void setDirection(Direction newDir) {
-        // Prevent 180 degree reverse
-        if (direction == Direction.UP && newDir == Direction.DOWN) return;
-        if (direction == Direction.DOWN && newDir == Direction.UP) return;
-        if (direction == Direction.LEFT && newDir == Direction.RIGHT) return;
-        if (direction == Direction.RIGHT && newDir == Direction.LEFT) return;
-        direction = newDir;
-    }
-
     public Deque<Point> getSnake() {
         return snake;
     }
@@ -119,6 +131,7 @@ public class SnakeGame {
     // Resets snake, direction, food, and gameOver state
     public void reset() {
         snake.clear();
+        inputQueue.clear(); // Clear input queue, so the snake doesn't move on new game
 
         int cx = width / 2;
         int cy = height / 2;
