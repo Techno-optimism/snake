@@ -8,7 +8,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
 import java.awt.Point;
-
+import java.util.*;
 
 public class SimpleGrid extends Application {
 
@@ -18,8 +18,8 @@ public class SimpleGrid extends Application {
     public void start(Stage stage) {
         GridPane pane = new GridPane();
 
-        int n = 15;
-        int m = 12;
+        int n = hor;
+        int m = ver;
         int cellSize = 50;
 
         Rectangle[][] cells = new Rectangle[n][m];
@@ -97,7 +97,28 @@ public class SimpleGrid extends Application {
         }
     }
 
+    public static int hor;
+    public static int ver;
+
     public static void main(String[] args) {
+        Scanner input = new Scanner(System.in);
+        System.out.print("Input horizontal size: ");
+        hor = input.nextInt();
+        if (hor < 5) {
+            hor = 5;
+        }
+        if (hor > 100) {
+            hor = 100;
+        }
+        System.out.print("Input vertical size: ");
+        ver = input.nextInt();
+        if (ver < 5) {
+            ver = 5;
+        }
+        if (ver > 100) {
+            ver = 100;
+        }
+        input.close();
         launch(args);
     }
 }
