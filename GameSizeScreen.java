@@ -1,64 +1,162 @@
+import javafx.animation.FadeTransition;
+import javafx.animation.ScaleTransition;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.effect.BlurType;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.util.Duration;
+import javafx.scene.paint.ImagePattern;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.animation.ScaleTransition;
 
 public class GameSizeScreen extends StackPane {
-    public GameSizeScreen(Runnable onSelectTiny, Runnable onSelectSmall, Runnable onSelectMedium, Runnable onSelectLarge) {
-        // Overlay
-        Rectangle overlay = new Rectangle();
-        overlay.setFill(Color.BLACK);
-        overlay.setOpacity(0.8);
+    private Label selectSizeLabel;
+    private VBox menuLayout;
+    private ImagePattern island_bg;
 
-        // Binds the overlay size to the StackPane size
-        overlay.widthProperty().bind(this.widthProperty());
-        overlay.heightProperty().bind(this.heightProperty());
+    public GameSizeScreen(Runnable onSelectTiny, Runnable onSelectSmall, Runnable onSelectMedium, Runnable onSelectLarge, Runnable onBack) {
+        // Load a background image; if missing use a solid color background
+        Image bgImage = new Image("file:resources/main_menu_island.png", false);
+        if (!bgImage.isError()) {
+            ImageView bg = new ImageView(bgImage);
+            bg.setPreserveRatio(false);
+            bg.setSmooth(true);
+            bg.setCache(true);
+            bg.fitWidthProperty().bind(this.widthProperty());
+            bg.fitHeightProperty().bind(this.heightProperty());
+            bg.setMouseTransparent(true);
+            this.getChildren().add(0, bg);
+        } else {
+            // fallback background color
+            Rectangle fallback = new Rectangle();
+            fallback.setFill(Color.web("#3b2e22"));
+            fallback.widthProperty().bind(this.widthProperty());
+            fallback.heightProperty().bind(this.heightProperty());
+            this.getChildren().add(0, fallback);
+        }
+
+        try {
+            island_bg    = new ImagePattern(new Image("file:resources/main_menu_island.png", 0, 0, true, false));
+        } catch (Exception e) {
+            System.out.println("Cant find images");
+        }
+
+        // // Overlay
+        // Rectangle overlay = new Rectangle();
+        // overlay.setFill(Color.BLACK);
+        // overlay.setOpacity(0.8);
+
+        // // Binds the overlay size to the StackPane size
+        // overlay.widthProperty().bind(this.widthProperty());
+        // overlay.heightProperty().bind(this.heightProperty());
+
 
         // Menu which will hold the buttons and label
-        VBox menu = new VBox(20);
-        menu.setAlignment(Pos.CENTER);
+        menuLayout = new VBox(7);
+        menuLayout.setAlignment(Pos.CENTER);
+        menuLayout.setTranslateY(30);
 
         // UI elements
-        Label selectDifficultyLabel = new Label("Select Size");
-        selectDifficultyLabel.setStyle("-fx-font-size: 36px; -fx-text-fill: white; -fx-font-weight: bold;");
+        selectSizeLabel = new Label("Select Size");
+        selectSizeLabel.setFont(Font.font("Comic Sans MS", FontWeight.BOLD, 50));
+        selectSizeLabel.setTextFill(Color.web("#ffffffff"));
+        selectSizeLabel.setTranslateY(-150);
 
         // Tiny button
-        Button tinyButton = new Button("Tiny (7x7)");
+        Button tinyButton = createCustomButton("Tiny (7x7)");
         tinyButton.setOnAction(e -> {
             this.hide();
             onSelectTiny.run();
         });
 
         // Small button
-        Button smallButton = new Button("Small (10x10)");
+        Button smallButton = createCustomButton("Small (10x10)");
         smallButton.setOnAction(e -> {
             this.hide();
             onSelectSmall.run();
         });
 
         // Medium button
-        Button mediumButton = new Button("Medium (15x15)");
+        Button mediumButton = createCustomButton("Medium (15x15)");
         mediumButton.setOnAction(e -> {
             this.hide();
             onSelectMedium.run();
         });
 
         // Large button
-        Button largeButton = new Button("Large (20x20)");
+        Button largeButton = createCustomButton("Large (20x20)");
         largeButton.setOnAction(e -> {
             this.hide();
             onSelectLarge.run();
         });
 
-        menu.getChildren().addAll(selectDifficultyLabel, tinyButton, smallButton, mediumButton, largeButton);
+        // Back button
+        Button backButton = createCustomButton("Back");
+        backButton.setOnAction(e -> {
+            this.hide();
+            onBack.run();
+        });
+
+        menuLayout.getChildren().addAll(tinyButton, smallButton, mediumButton, largeButton, backButton);
 
         // Add to StackPane, so menu is on top of overlay
-        this.getChildren().addAll(overlay, menu);
+        this.getChildren().addAll(menuLayout, selectSizeLabel);
 
-        this.setVisible(true); // Visible by default to select size at start
+        this.setVisible(false); // Invisible by default
+    }
+
+    private Button createCustomButton(String text) {
+        Button btn = new Button(text);
+
+        String baseStyle =
+            "-fx-background-color: transparent;" +
+            "-fx-text-fill: #ffffffff;" +
+            "-fx-font-family: 'Comic Sans MS';" +
+            "-fx-font-size: 28px;" +
+            "-fx-padding: 6 24 6 24;";
+
+        String hoverStyle =
+            "-fx-background-color: transparent;" +
+            "-fx-text-fill: yellow;" +
+            "-fx-font-family: 'Comic Sans MS';" +
+            "-fx-font-size: 28px;" +
+            "-fx-padding: 6 24 6 24;" +
+            "-fx-cursor: hand;";
+
+        btn.setStyle(baseStyle);
+        btn.setFocusTraversable(false);
+        btn.setPrefWidth(340);
+
+        ScaleTransition enterScale = new ScaleTransition(Duration.millis(250), btn);
+        enterScale.setToX(1.25);
+        enterScale.setToY(1.25);
+
+        ScaleTransition exitScale = new ScaleTransition(Duration.millis(250), btn);
+        exitScale.setToX(1.0);
+        exitScale.setToY(1.0);
+
+        btn.setOnMouseEntered(e -> {
+            btn.setStyle(hoverStyle);
+            exitScale.stop();
+            enterScale.playFromStart();
+        });
+
+        btn.setOnMouseExited(e -> {
+            btn.setStyle(baseStyle);
+            enterScale.stop();
+            exitScale.playFromStart();
+        });
+
+        return btn;
     }
 
     public void show() {

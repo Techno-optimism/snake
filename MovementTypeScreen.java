@@ -18,12 +18,12 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.animation.ScaleTransition;
 
-public class DifficultyScreen extends StackPane {
-    private Label selectDifficultyLabel;
+public class MovementTypeScreen extends StackPane {
+    private Label selectMovementTypeLabel;
     private VBox menuLayout;
     private ImagePattern island_bg;
 
-    public DifficultyScreen(Runnable onSelectEasy, Runnable onSelectMedium, Runnable onSelectHard, Runnable onSelectWormFood, Runnable onBack) {
+    public MovementTypeScreen(Runnable onSelectClassic, Runnable onSelectWrap, Runnable onBack) {
         // Load a background image; if missing use a solid color background
         Image bgImage = new Image("file:resources/main_menu_island.png", false);
         if (!bgImage.isError()) {
@@ -66,37 +66,23 @@ public class DifficultyScreen extends StackPane {
         menuLayout.setTranslateY(30);
 
         // UI elements
-        selectDifficultyLabel = new Label("Select Difficulty");
-        selectDifficultyLabel.setFont(Font.font("Comic Sans MS", FontWeight.BOLD, 50));
-        selectDifficultyLabel.setTextFill(Color.web("#ffffffff"));
-        selectDifficultyLabel.setTranslateY(-150);
+        selectMovementTypeLabel = new Label("Select Movement Type");
+        selectMovementTypeLabel.setFont(Font.font("Comic Sans MS", FontWeight.BOLD, 50));
+        selectMovementTypeLabel.setTextFill(Color.web("#ffffffff"));
+        selectMovementTypeLabel.setTranslateY(-150);
 
-        // Easy button
-        Button easyButton = createCustomButton("Easy");
-        easyButton.setOnAction(e -> {
+        // Classic button
+        Button classicMovementButton = createCustomButton("Classic");
+        classicMovementButton.setOnAction(e -> {
             this.hide();
-            onSelectEasy.run();
+            onSelectClassic.run();
         });
 
-        // Medium button
-        Button mediumButton = createCustomButton("Medium");
-        mediumButton.setOnAction(e -> {
+        // Wrap button
+        Button wrapMovementButton = createCustomButton("Wrap");
+        wrapMovementButton.setOnAction(e -> {
             this.hide();
-            onSelectMedium.run();
-        });
-
-        // Hard button
-        Button hardButton = createCustomButton("Hard");
-        hardButton.setOnAction(e -> {
-            this.hide();
-            onSelectHard.run();
-        });
-
-        // Worm Food button
-        Button wormFoodButton = createCustomButton("Worm Food");
-        wormFoodButton.setOnAction(e -> {
-            this.hide();
-            onSelectWormFood.run();
+            onSelectWrap.run();
         });
 
         // Back button
@@ -106,10 +92,10 @@ public class DifficultyScreen extends StackPane {
             onBack.run();
         });
 
-        menuLayout.getChildren().addAll(easyButton, mediumButton, hardButton, wormFoodButton, backButton);
+        menuLayout.getChildren().addAll(classicMovementButton, wrapMovementButton, backButton);
 
         // Add to StackPane, so menu is on top of overlay
-        this.getChildren().addAll(menuLayout, selectDifficultyLabel);
+        this.getChildren().addAll(menuLayout, selectMovementTypeLabel);
 
         this.setVisible(false); // Invisible by default
     }
