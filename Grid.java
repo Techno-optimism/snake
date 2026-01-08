@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import javafx.application.Application;
 import javafx.scene.Scene;
 // import javafx.scene.control.skin.TextInputControlSkin.Direction;
@@ -17,6 +18,8 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.ImagePattern;
+import javafx.scene.image.Image;
 
 
 public class Grid extends Application {
@@ -27,48 +30,73 @@ public class Grid extends Application {
     private GameOverScreen gameOverScreen;
     private DifficultyScreen difficultyScreen;
     private GameSizeScreen gameSizeScreen;
+    private MovementTypeScreen movementTypeScreen;
+    private MainMenuScreen mainMenuScreen;
     private GridPane gameGrid;
+    private HBox topBar;
+    private int gameMode = 0;
+    private int gameMovementType = 0;
+    private static final int MODE_NONE = 0;
+    private static final int MODE_CLASSIC = 1;
+    private static final int MODE_TIMED = 2;
+    private static final int MOVEMENT_CLASSIC = 1;
+    private static final int MOVEMENT_WRAP = 2;
+    private BorderPane mainLayout;
 
 
     private int rows;
     private int columns;
+    private int selectedRows;
+    private int selectedCols;
+    private int currentSpeed = 150;
     private Label scoreLabel;
     private Label highScoreLabel;
+    private ImagePattern bodyPattern, tailPattern, applePattern;
+    private ImagePattern headUp, headDown, headLeft, headRight;
 
     @Override
     public void start(Stage stage) {
-        BorderPane mainLayout = new BorderPane();
+        mainLayout = new BorderPane();
 
         // Top bar
-        HBox topBar = new HBox(50);
+        topBar = new HBox(50);
         topBar.setPrefHeight(50);
         topBar.setStyle("-fx-background-color: white; -fx-alignment: CENTER;");
 
         // Score label
         scoreLabel = new Label("Score: 0");
-        scoreLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: black;");
+        scoreLabel.setStyle("-fx-font-family: 'Comic Sans MS'; -fx-font-size: 20px; -fx-text-fill: black;");
 
         // High score label
         highScoreLabel = new Label("High Score: 0");
-        highScoreLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: black;");
+        highScoreLabel.setStyle("-fx-font-family: 'Comic Sans MS'; -fx-font-size: 20px; -fx-text-fill: black;");
 
-        topBar.getChildren().addAll(scoreLabel, highScoreLabel);
+        // score/highscore labels are added when a mode that shows them is selected
 
         // Game area (stackpane)
         StackPane gameArea = new StackPane();
 
         gameGrid = new GridPane();
         gameGrid.setAlignment(Pos.CENTER);
+        gameGrid.setStyle(
+            "-fx-background-color: #f4c064;" + // Background color
+            "-fx-border-color: #c0a060;" +     // Border color
+            "-fx-border-width: 2px;" +          // Border width
+            "-fx-border-style: solid;"         // Border style
+        );
 
         // Add the grid to the game area; screens are added after they're constructed
         gameArea.getChildren().add(gameGrid);
 
         // Assemble BorderPane
-        mainLayout.setTop(topBar);
+        // top bar is attached only when a mode is selected
         mainLayout.setCenter(gameArea);
 
+        // Create a root StackPane so overlay screens can cover the whole window
+        StackPane root = new StackPane();
+
         // Create scene and set up stage
-        Scene scene = new Scene(mainLayout, 1000, 1050);
+        Scene scene = new Scene(root, 1250, 1250);
 
         scene.setOnKeyPressed(event -> {
             if (game == null) return;
@@ -83,53 +111,158 @@ public class Grid extends Application {
         });
 
         gameOverScreen = new GameOverScreen(
-            // Must have exactly two actions, since the constructor takes two Runnables
-
             // On restart click
             () -> {
                 scoreLabel.setText("Score: 0");
                 game.reset();
-                gameSizeScreen.show();
+                startGame(currentSpeed);
+            },
+            // On exit to main menu click
+            () -> {
+                scoreLabel.setText("Score: 0");
+                game.reset();
+                // hide grid and clear mode/ui
+                setGameGridVisible(false);
+                gameMode = MODE_NONE;
+                topBar.getChildren().clear();
+                mainLayout.setTop(null);
+                mainMenuScreen.show();
             },
             // On quit click
             () -> System.exit(0)
         );
 
         difficultyScreen = new DifficultyScreen(
-            () -> startGame(250),
-            () -> startGame(150),
-            () -> startGame(75), 
-            () -> startGame(45)
+            () -> {
+                currentSpeed = 250;
+                movementTypeScreen.show();
+            },
+            () -> {
+                currentSpeed = 150;
+                movementTypeScreen.show();
+            },
+            () -> {
+                currentSpeed = 75;
+                movementTypeScreen.show();
+            },
+            () -> {
+                currentSpeed = 45;
+                movementTypeScreen.show();
+            },
+            () -> {
+                gameSizeScreen.show();
+            }
         );
 
         gameSizeScreen = new GameSizeScreen(
+            // NOTE: We only STORE the size here. We do NOT call buildGrid() yet.
+            // 
+            // Reason: buildGrid() initializes the 'SnakeGame' logic, which requires
+            // gameMovementType (Classic/Wrap) to be known. Since movement type is selected
+            // later (in MovementTypeScreen), calling buildGrid() now 
+            // would lock in the wrong (default) movement rules.
+            //
+            // The actual grid building happens in MovementTypeScreen callbacks.
             () -> {
-                buildGrid(7, 7);
+                this.selectedRows = 7;
+                this.selectedCols = 7;
                 difficultyScreen.show();
             },
             () -> {
-                buildGrid(10, 10);
+                this.selectedRows = 10;
+                this.selectedCols = 10;
                 difficultyScreen.show();
             }, 
             () -> {
-                buildGrid(15, 15);
+                this.selectedRows = 15;
+                this.selectedCols = 15;
                 difficultyScreen.show();
             },
             () -> {
-                buildGrid(20, 20);
+                this.selectedRows = 20;
+                this.selectedCols = 20;
                 difficultyScreen.show();
+            },
+            () -> {
+                mainMenuScreen.show();
             }
         );
+
+        mainMenuScreen = new MainMenuScreen(
+            () -> {
+                // Classic mode selected
+                mainMenuScreen.hide();
+                gameMode = MODE_CLASSIC;
+                // Attaches top bar and makes score UI visible for classic
+                mainLayout.setTop(topBar);
+                if (!topBar.getChildren().contains(scoreLabel)) {
+                    topBar.getChildren().addAll(scoreLabel, highScoreLabel);
+                }
+                gameSizeScreen.show();
+            },
+            () -> {
+                // Timed mode selected
+                mainMenuScreen.hide();
+                gameMode = MODE_TIMED;
+                // Attaches the top bar but removes score UI for timed mode
+                mainLayout.setTop(topBar);
+                topBar.getChildren().removeAll(scoreLabel, highScoreLabel);
+                gameSizeScreen.show();
+            }
+        );
+
+        movementTypeScreen = new MovementTypeScreen(
+            () -> {
+                // Classic mode selected
+                movementTypeScreen.hide();
+                System.out.println("Classic movement selected");
+                gameMovementType = MOVEMENT_CLASSIC;
+
+                // Now the grid is built with the selected size and movement type
+                buildGrid(selectedRows, selectedCols);
+                startGame(currentSpeed);
+            },
+            () -> {
+                // Wrap mode selected
+                movementTypeScreen.hide();
+                System.out.println("Wrap movement selected");
+                gameMovementType = MOVEMENT_WRAP;
+
+                // Now the grid is built with the selected size and movement type
+                buildGrid(selectedRows, selectedCols);
+                startGame(currentSpeed);
+            }, 
+            () -> {
+                gameSizeScreen.show();
+            }
+        );
+
+        // Load images for snake and food
+        try {
+            headUp    = new ImagePattern(new Image("file:resources/Snake_head_up.png", 0, 0, true, false));
+            headDown  = new ImagePattern(new Image("file:resources/Snake_head_down.png", 0, 0, true, false));
+            headLeft  = new ImagePattern(new Image("file:resources/Snake_head_left.png", 0, 0, true, false));
+            headRight = new ImagePattern(new Image("file:resources/Snake_head_right.png", 0, 0, true, false));
+
+        } catch (Exception e) {
+            System.out.println("Cant find images");
+        }
 
         stage.setScene(scene);
         stage.setTitle("Snake Game");
         stage.setResizable(false);
 
-        // The screens are added to the game area
-        gameArea.getChildren().addAll(gameOverScreen, gameSizeScreen, difficultyScreen);
+        // The screens are added to the root so they can cover the whole window
+        root.getChildren().addAll(
+            mainLayout, // The game itself
+            gameOverScreen, // Layer 1
+            movementTypeScreen, // Layer 2
+            difficultyScreen, // Layer 3
+            gameSizeScreen, // Layer 4
+            mainMenuScreen); // Layer 5 (top)
 
         // Show the first screen
-        gameSizeScreen.show();
+        mainMenuScreen.show();
         stage.show();
     }
 
@@ -139,6 +272,13 @@ public class Grid extends Application {
     // #c0a060 (grid color)
 
     // Used to clear the grid and draw the game state onto the grid each tick
+    private void setGameGridVisible(boolean visible) {
+        gameGrid.setVisible(visible);
+        if (!visible) {
+            loop.stop();
+        }
+    }
+
     private void draw(SnakeGame game, Rectangle[][] cells, int n, int m) {
         // Clear all cells to background color
         for (int col = 0; col < n; col++) {
@@ -151,10 +291,39 @@ public class Grid extends Application {
         int currentScore = game.getSnake().size() - 2;
         scoreLabel.setText("Score: " + currentScore);
 
+
+
         // Draw snake
-        for (Point p : game.getSnake()) {
-            cells[p.x][p.y].setFill(Color.web("#1b5e20"));   
+        var snakeList = new ArrayList<>(game.getSnake());
+
+        for (int i = 0; i < snakeList.size(); i++) {
+            Point p = snakeList.get(i);
+
+            if (p.x < 0 || p.x >= columns || p.y < 0 || p.y >= rows) {
+                continue; // Skip invalid points
+            }
+
+            if (i == 0) {
+                SnakeGame.Direction d = game.getDirection();
+                if (d == null) d = SnakeGame.Direction.LEFT;
+                // Head
+                switch (d) {
+                    case UP: cells[p.x][p.y].setFill(headUp); break;
+                    case DOWN: cells[p.x][p.y].setFill(headDown); break;
+                    case LEFT: cells[p.x][p.y].setFill(headLeft); break;
+                    case RIGHT: cells[p.x][p.y].setFill(headRight); break;
+                }
+            } else {
+                // Body
+                cells[p.x][p.y].setFill(Color.web("#1b5e20"));   
+            }
         }
+
+
+
+        //for (Point p : game.getSnake()) {
+            //cells[p.x][p.y].setFill(Color.web("#1b5e20"));   
+        //}
 
         // Draw food
         Point f = game.getFood();
@@ -164,6 +333,17 @@ public class Grid extends Application {
     }
 
     public void startGame(int speed) {
+        this.currentSpeed = speed;
+        setGameGridVisible(true);
+        // Show or hide score UI depending on selected game mode
+        if (gameMode == MODE_CLASSIC) {
+            if (!topBar.getChildren().contains(scoreLabel)) {
+                topBar.getChildren().addAll(scoreLabel, highScoreLabel);
+            }
+        } else {
+            topBar.getChildren().removeAll(scoreLabel, highScoreLabel);
+        }
+
         draw(game, cells, rows, columns);
 
         loop = new Timeline(
@@ -195,12 +375,27 @@ public class Grid extends Application {
 
         // Clear the old grid if it exists
         gameGrid.getChildren().clear();
+        gameGrid.setStyle("-fx-background-color: #f4c064; -fx-border-color: #c0a060; -fx-border-width: 2px;");
 
         // Initialize cells and game
         cells = new Rectangle[rows][columns];
-        game = new SnakeGame(rows, columns);
 
-        double availableSize = 900.0;
+        System.out.println("Building grid. Type of movement: " + gameMovementType);
+        MovementType strategy = new ClassicMovement();
+
+        // Set movement strategy based on game mode
+        if (gameMovementType == MOVEMENT_CLASSIC) {
+            System.out.println("Using Classic Movement Strategy");
+            strategy = new ClassicMovement();
+        }
+        else if (gameMovementType == MOVEMENT_WRAP) {
+            System.out.println("Using Wrap Movement Strategy");
+            strategy = new WrapMovement();
+        }
+
+        game = new SnakeGame(rows, columns, strategy);
+
+        double availableSize = 1150.0;
         double sizeBasedOnWidth = availableSize / columns;
         double sizeBasedOnHeight = availableSize / rows;
         double cellSize = Math.floor(Math.min(sizeBasedOnWidth, sizeBasedOnHeight));
@@ -213,10 +408,10 @@ public class Grid extends Application {
         for (int col = 0; col < rows; col++) {
             for (int row = 0; row < columns; row++) {
                 Rectangle cell = new Rectangle(cellSize, cellSize);
-                cell.setFill(Color.web("#f4c064"));
-                cell.setStroke(Color.web("#c0a060"));
-                cell.setStrokeWidth(1.0);
-                cell.setStrokeType(StrokeType.INSIDE); // Stroke inside to avoid increasing size of each cell
+                cell.setFill(Color.web("#f4c064")); // Background color
+                cell.setStroke(null);
+                // cell.setStrokeWidth(1.0);
+                // cell.setStrokeType(StrokeType.INSIDE); // Stroke inside to avoid increasing size of each cell
                 gameGrid.add(cell, col, row);
                 cells[col][row] = cell;    
             }
@@ -226,4 +421,7 @@ public class Grid extends Application {
     public static void main(String[] args) {
         launch(args);
     }
+
+    // #c0a060" stroke color
+    // #f4c064 background color
 }

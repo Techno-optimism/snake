@@ -21,15 +21,18 @@ public class GameOverScreen extends StackPane {
     // Runnable is an interface that has a single method run()
     // This passes two actions to be performed on button clicks
     // The contructor takes two Runnables: one for restart and one for quit
-    public GameOverScreen(Runnable onRestart, Runnable onQuit) {
+    public GameOverScreen(Runnable onRestart, Runnable onMainMenu, Runnable onQuit) {
         // Overlay
-        overlay = new Rectangle(1000, 1000, Color.BLACK);
+        overlay = new Rectangle();
+        overlay.widthProperty().bind(this.widthProperty());
+        overlay.heightProperty().bind(this.heightProperty());
+        overlay.setFill(Color.BLACK);
         overlay.setOpacity(0.0); // Start invisible to fade in on show
 
         title = new Label("YOU DIED");
         title.setFont(Font.font("Times New Roman", FontWeight.BOLD, 80));
         title.setTextFill(Color.rgb(180, 20, 20)); // Dark red color
-        title.setTranslateY(-40);
+        title.setTranslateY(-110);
 
        // Glow effect
         DropShadow glow = new DropShadow();
@@ -47,17 +50,26 @@ public class GameOverScreen extends StackPane {
             onRestart.run();
         });
 
+        Button mainMenuButton = createCustomButton("Main Menu");
+        mainMenuButton.setOnAction(e -> {
+            this.hide();
+            onMainMenu.run();
+        });
+
         Button quitButton = createCustomButton("Give Up");
         quitButton.setOnAction(e -> onQuit.run());
 
        menuLayout = new VBox(30);
        menuLayout.setAlignment(Pos.CENTER);
-       menuLayout.getChildren().addAll(restartButton, quitButton);
+       menuLayout.getChildren().addAll(restartButton, mainMenuButton, quitButton);
        menuLayout.setTranslateY(100);
        menuLayout.setOpacity(0); // Start invisible to fade in on show
 
         // Stack
-        this.getChildren().addAll(overlay, title, menuLayout);
+        this.getChildren().addAll(
+            overlay, 
+            title, 
+            menuLayout);
         this.setVisible(false); // Hidden by default so we don't see it at game start
     }
 

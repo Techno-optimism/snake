@@ -11,13 +11,15 @@ public class SnakeGame {
     private Direction direction;
     private Point food;
     private boolean gameOver;
+    private MovementType movementType;
 
     private final Random random = new Random();
     private Deque<Direction> inputQueue = new ArrayDeque<>();
 
-    public SnakeGame(int width, int height) {
+    public SnakeGame(int width, int height, MovementType movementType) {
         this.width = width;
         this.height = height;
+        this.movementType = movementType;
 
         int cx = width / 2;
         int cy = height / 2;
@@ -30,7 +32,7 @@ public class SnakeGame {
         snake.addLast(new Point(cx, cy + 1));
 
         // Initial direction is LEFT
-        direction = Direction.LEFT;
+        this.direction = Direction.LEFT;
         gameOver = false;
 
         // First food
@@ -61,23 +63,10 @@ public class SnakeGame {
         }
 
         Point head = snake.peekFirst();
-        int x = head.x;
-        int y = head.y;
-
-        switch (direction) {
-            case UP -> y--;
-            case DOWN -> y++;
-            case LEFT -> x--;
-            case RIGHT -> x++;
-        }
-
-        Point newHead = new Point(x, y);
-
-        // Checks
+        Point newHead = movementType.calculateNextHead(head, direction, width, height);
 
         // Wall collision
-        // x and y cant be equal to width or height (because of 0 indexing)
-        if (x < 0 || x >= width || y < 0 || y >= height) {
+        if (newHead == null) {
             gameOver = true;
             return;
         }
@@ -147,6 +136,10 @@ public class SnakeGame {
 
         // Initial food
         spawnFood(); 
+    }
+
+    public Direction getDirection() {
+        return this.direction;
     }
 
     public enum Direction {
