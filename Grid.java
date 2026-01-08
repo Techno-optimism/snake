@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.util.Random;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 // import javafx.scene.control.skin.TextInputControlSkin.Direction;
@@ -34,6 +36,7 @@ public class Grid extends Application {
     private MainMenuScreen mainMenuScreen;
     private GridPane gameGrid;
     private HBox topBar;
+
     private int gameMode = 0;
     private int gameMovementType = 0;
     private static final int MODE_NONE = 0;
@@ -43,7 +46,6 @@ public class Grid extends Application {
     private static final int MOVEMENT_WRAP = 2;
     private BorderPane mainLayout;
 
-
     private int rows;
     private int columns;
     private int selectedRows;
@@ -51,8 +53,12 @@ public class Grid extends Application {
     private int currentSpeed = 150;
     private Label scoreLabel;
     private Label highScoreLabel;
-    private ImagePattern bodyPattern, tailPattern, applePattern;
+
+    private ImagePattern bodyPattern, tailPattern;
+    private ImagePattern blueApplePattern, redApplePattern;
     private ImagePattern headUp, headDown, headLeft, headRight;
+
+    private final Random random = new Random();
 
     @Override
     public void start(Stage stage) {
@@ -243,6 +249,8 @@ public class Grid extends Application {
             headDown  = new ImagePattern(new Image("file:resources/Snake_head_down.png", 512, 512, true, false));
             headLeft  = new ImagePattern(new Image("file:resources/Snake_head_left.png", 512, 512, true, false));
             headRight = new ImagePattern(new Image("file:resources/Snake_head_right.png", 512, 512, true, false));
+            redApplePattern = new ImagePattern(new Image("file:resources/red_apple.png", 512, 512, true, false));
+            blueApplePattern = new ImagePattern(new Image("file:resources/blue_apple.png", 512, 512, true, false));
 
         } catch (Exception e) {
             System.out.println("Cant find images");
@@ -328,7 +336,13 @@ public class Grid extends Application {
         // Draw food
         Point f = game.getFood();
         if (f != null) {
-            cells[f.x][f.y].setFill(Color.web("#b71c1c"));
+            // Random color for food
+            int type = game.getAppleType();
+            if (type == 1) {
+                cells[f.x][f.y].setFill(redApplePattern); // Red apple
+            } else {
+                cells[f.x][f.y].setFill(blueApplePattern); // Blue apple
+            }
         }
     }
 

@@ -45,7 +45,7 @@ public class GameSizeScreen extends StackPane {
         }
 
         try {
-            island_bg    = new ImagePattern(new Image("file:resources/main_menu_island.png", 0, 0, true, false));
+            island_bg    = new ImagePattern(new Image("file:resources/main_menu_island.png", 512, 512, true, false));
         } catch (Exception e) {
             System.out.println("Cant find images");
         }
