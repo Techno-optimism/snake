@@ -239,10 +239,10 @@ public class Grid extends Application {
 
         // Load images for snake and food
         try {
-            headUp    = new ImagePattern(new Image("file:resources/Snake_head_up.png", 0, 0, true, false));
-            headDown  = new ImagePattern(new Image("file:resources/Snake_head_down.png", 0, 0, true, false));
-            headLeft  = new ImagePattern(new Image("file:resources/Snake_head_left.png", 0, 0, true, false));
-            headRight = new ImagePattern(new Image("file:resources/Snake_head_right.png", 0, 0, true, false));
+            headUp    = new ImagePattern(new Image("file:resources/Snake_head_up.png", 512, 512, true, false));
+            headDown  = new ImagePattern(new Image("file:resources/Snake_head_down.png", 512, 512, true, false));
+            headLeft  = new ImagePattern(new Image("file:resources/Snake_head_left.png", 512, 512, true, false));
+            headRight = new ImagePattern(new Image("file:resources/Snake_head_right.png", 512, 512, true, false));
 
         } catch (Exception e) {
             System.out.println("Cant find images");
