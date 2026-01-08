@@ -71,6 +71,9 @@ public class SimpleSnakeGame {
             case RIGHT -> x++;
         }
 
+        x = (x + width) % width; // changes x and y values for toroidal wrapping
+        y = (y + height) % height;
+
         Point newHead = new Point(x, y);
 
         // Checks
