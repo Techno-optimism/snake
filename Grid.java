@@ -55,7 +55,7 @@ public class Grid extends Application {
     private Label highScoreLabel;
 
     private ImagePattern bodyPattern, tailPattern;
-    private ImagePattern blueApplePattern, redApplePattern;
+    private ImagePattern blueApplePattern, redApplePattern, purpleApplePattern;
     private ImagePattern headUp, headDown, headLeft, headRight;
 
     private final Random random = new Random();
@@ -156,6 +156,7 @@ public class Grid extends Application {
                 movementTypeScreen.show();
             },
             () -> {
+                System.out.println("GOING BACK TO SIZE SCREEN NOW");
                 gameSizeScreen.show();
             }
         );
@@ -166,9 +167,9 @@ public class Grid extends Application {
             // Reason: buildGrid() initializes the 'SnakeGame' logic, which requires
             // gameMovementType (Classic/Wrap) to be known. Since movement type is selected
             // later (in MovementTypeScreen), calling buildGrid() now 
-            // would lock in the wrong (default) movement rules.
+            // would lock in the wrong (default) movement rules
             //
-            // The actual grid building happens in MovementTypeScreen callbacks.
+            // The actual grid building happens in MovementTypeScreen callbacks
             () -> {
                 this.selectedRows = 7;
                 this.selectedCols = 7;
@@ -239,7 +240,7 @@ public class Grid extends Application {
                 startGame(currentSpeed);
             }, 
             () -> {
-                gameSizeScreen.show();
+                difficultyScreen.show();
             }
         );
 
@@ -251,6 +252,7 @@ public class Grid extends Application {
             headRight = new ImagePattern(new Image("file:resources/Snake_head_right.png", 512, 512, true, false));
             redApplePattern = new ImagePattern(new Image("file:resources/red_apple.png", 512, 512, true, false));
             blueApplePattern = new ImagePattern(new Image("file:resources/blue_apple.png", 512, 512, true, false));
+            purpleApplePattern = new ImagePattern(new Image("file:resources/purple_apple.png", 512, 512, true, false));
 
         } catch (Exception e) {
             System.out.println("Cant find images");
@@ -340,8 +342,10 @@ public class Grid extends Application {
             int type = game.getAppleType();
             if (type == 1) {
                 cells[f.x][f.y].setFill(redApplePattern); // Red apple
-            } else {
+            } else if (type == 2) {
                 cells[f.x][f.y].setFill(blueApplePattern); // Blue apple
+            } else {
+                cells[f.x][f.y].setFill(purpleApplePattern); // Purple apple
             }
         }
     }
@@ -395,19 +399,19 @@ public class Grid extends Application {
         cells = new Rectangle[rows][columns];
 
         System.out.println("Building grid. Type of movement: " + gameMovementType);
-        MovementType strategy = new ClassicMovement();
+        MovementType movementType = new ClassicMovement();
 
-        // Set movement strategy based on game mode
+        // Set movement type
         if (gameMovementType == MOVEMENT_CLASSIC) {
-            System.out.println("Using Classic Movement Strategy");
-            strategy = new ClassicMovement();
+            System.out.println("Using Classic Movement");
+            movementType = new ClassicMovement();
         }
         else if (gameMovementType == MOVEMENT_WRAP) {
-            System.out.println("Using Wrap Movement Strategy");
-            strategy = new WrapMovement();
+            System.out.println("Using Wrap Movement");
+            movementType = new WrapMovement();
         }
 
-        game = new SnakeGame(rows, columns, strategy);
+        game = new SnakeGame(rows, columns, movementType);
 
         double availableSize = 1150.0;
         double sizeBasedOnWidth = availableSize / columns;

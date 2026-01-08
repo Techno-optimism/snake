@@ -14,6 +14,7 @@ public class SnakeGame {
     private MovementType movementType;
     private static final int APPLE_RED = 1;
     private static final int APPLE_BLUE = 2;
+    private static final int APPLE_PURPLE = 3;
     private int appleType;
 
     private final Random random = new Random();
@@ -116,10 +117,12 @@ public class SnakeGame {
                 food = candidate;
 
                 int roll = random.nextInt(100);
-                if (roll < 80) {
+                if (roll < 70) {
                     appleType = APPLE_RED;
-                } else {
+                } else if (roll < 90) {
                     appleType = APPLE_BLUE;
+                } else if (roll < 100) {
+                    appleType = APPLE_PURPLE;
                 }
                 return;
             }

@@ -36,7 +36,7 @@ public class MovementTypeScreen extends StackPane {
             bg.setMouseTransparent(true);
             this.getChildren().add(0, bg);
         } else {
-            // fallback background color
+            // Fallback background color
             Rectangle fallback = new Rectangle();
             fallback.setFill(Color.web("#3b2e22"));
             fallback.widthProperty().bind(this.widthProperty());
