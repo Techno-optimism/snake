@@ -1,73 +1,104 @@
 import javafx.application.Application;
 import javafx.scene.Scene;
+// import javafx.scene.control.skin.TextInputControlSkin.Direction;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.StrokeType;
 import javafx.stage.Stage;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
 import java.awt.Point;
-import java.util.*;
+import java.util.ArrayDeque;
+import javafx.geometry.Pos;
+import javafx.scene.control.Label;
+import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
+
 
 public class SimpleGrid extends Application {
 
     private Timeline loop;
+    private SnakeGame game;
+    private Rectangle[][] cells;
+    private GameOverScreen gameOverScreen;
+    private SimpleGameSizeScreen gameSizeScreen;
+    private GridPane gameGrid;
+
+
+    private int rows;
+    private int columns;
 
     @Override
     public void start(Stage stage) {
-        GridPane pane = new GridPane();
+        BorderPane mainLayout = new BorderPane();
 
-        int n = hor;
-        int m = ver;
-        int cellSize = 50;
+        // Game area (stackpane)
+        StackPane gameArea = new StackPane();
 
-        Rectangle[][] cells = new Rectangle[n][m];
+        gameGrid = new GridPane();
+        gameGrid.setAlignment(Pos.CENTER);
 
-        for (int col = 0; col < n; col++) {
-            for (int row = 0; row < m; row++) {
-                Rectangle cell = new Rectangle(cellSize, cellSize);
-                cell.setFill(Color.web("#f4c064"));
-                cell.setStroke(Color.web("#c0a060"));
-                pane.add(cell, col, row);
-                cells[col][row] = cell;    
-            }
-        }
+        // Add the grid to the game area; screens are added after they're constructed
+        gameArea.getChildren().add(gameGrid);
 
-        int sceneWidth  = n * cellSize;
-        int sceneHeight = m * cellSize;
+        // Assemble BorderPane
+        mainLayout.setCenter(gameArea);
 
-        Scene scene = new Scene(pane, sceneWidth, sceneHeight);
-        stage.setScene(scene);
-        stage.setResizable(false);
-
-        SimpleSnakeGame game = new SimpleSnakeGame(n, m);
+        // Create scene and set up stage
+        Scene scene = new Scene(mainLayout, 1000, 1050);
 
         scene.setOnKeyPressed(event -> {
+            if (game == null) return;
+
             switch (event.getCode()) {
-                case UP -> game.setDirection(SimpleSnakeGame.Direction.UP);
-                case DOWN -> game.setDirection(SimpleSnakeGame.Direction.DOWN);
-                case LEFT -> game.setDirection(SimpleSnakeGame.Direction.LEFT);
-                case RIGHT -> game.setDirection(SimpleSnakeGame.Direction.RIGHT);
+                case UP -> game.setDirection(SnakeGame.Direction.UP);
+                case DOWN -> game.setDirection(SnakeGame.Direction.DOWN);
+                case LEFT -> game.setDirection(SnakeGame.Direction.LEFT);
+                case RIGHT -> game.setDirection(SnakeGame.Direction.RIGHT);
                 default -> { }
             }
         });
 
-        loop = new Timeline(
-            new KeyFrame(Duration.millis(150), e -> {
-                game.step(); // Move snake one step
-                draw(game, cells, n, m);
+        gameOverScreen = new GameOverScreen(
+            // Must have exactly two actions, since the constructor takes two Runnables
 
-                if (game.isGameOver()) {
-                    System.out.println("GAME OVER"); 
-                    loop.stop();
-                }
-            })
+            // On restart click
+            () -> {
+                game.reset();
+                gameSizeScreen.show();
+            },
+            // On quit click
+            () -> System.exit(0)
         );
 
-        loop.setCycleCount(Timeline.INDEFINITE);
-        loop.play();
+        gameSizeScreen = new SimpleGameSizeScreen(
+            () -> {
+                buildGrid(7, 7);
+            },
+            () -> {
+                buildGrid(10, 10);
+            }, 
+            () -> {
+                buildGrid(15, 15);
+            },
+            () -> {
+                buildGrid(20, 20);
+            }
+        );
 
+        stage.setScene(scene);
+        stage.setTitle("Snake Game");
+        stage.setResizable(false);
+
+        // The screens are added to the game area
+        gameArea.getChildren().addAll(gameOverScreen, gameSizeScreen);
+
+        // Show the first screen
+        gameSizeScreen.show();
         stage.show();
     }
 
@@ -76,7 +107,8 @@ public class SimpleGrid extends Application {
     // #b71c1c (darker food color)
     // #c0a060 (grid color)
 
-    private void draw(SimpleSnakeGame game, Rectangle[][] cells, int n, int m) {
+    // Used to clear the grid and draw the game state onto the grid each tick
+    private void draw(SnakeGame game, Rectangle[][] cells, int n, int m) {
         // Clear all cells to background color
         for (int col = 0; col < n; col++) {
             for (int row = 0; row < m; row++) {
@@ -97,28 +129,59 @@ public class SimpleGrid extends Application {
         }
     }
 
-    public static int hor;
-    public static int ver;
+    public void startGame(int speed) {
+        draw(game, cells, rows, columns);
+
+        loop = new Timeline(
+            new KeyFrame(Duration.millis(speed), e -> {
+                game.step();
+                draw(game, cells, rows, columns);
+
+                if (game.isGameOver()) {
+                    gameOverScreen.show();
+                    loop.stop();
+                }
+            })
+        );
+        loop.setCycleCount(Timeline.INDEFINITE);
+        loop.play();
+    }
+
+    public void buildGrid(int newRows, int newColumns) {
+        this.rows = newRows;
+        this.columns = newColumns;
+
+        // Clear the old grid if it exists
+        gameGrid.getChildren().clear();
+
+        // Initialize cells and game
+        cells = new Rectangle[rows][columns];
+        game = new SnakeGame(rows, columns);
+
+        double availableSize = 900.0;
+        double sizeBasedOnWidth = availableSize / columns;
+        double sizeBasedOnHeight = availableSize / rows;
+        double cellSize = Math.floor(Math.min(sizeBasedOnWidth, sizeBasedOnHeight));
+
+        // Avoid gaps from GridPane spacing
+        gameGrid.setHgap(0);
+        gameGrid.setVgap(0);
+
+        // Create grid cells
+        for (int col = 0; col < rows; col++) {
+            for (int row = 0; row < columns; row++) {
+                Rectangle cell = new Rectangle(cellSize, cellSize);
+                cell.setFill(Color.web("#f4c064"));
+                cell.setStroke(Color.web("#c0a060"));
+                cell.setStrokeWidth(1.0);
+                cell.setStrokeType(StrokeType.INSIDE); // Stroke inside to avoid increasing size of each cell
+                gameGrid.add(cell, col, row);
+                cells[col][row] = cell;    
+            }
+        }
+    }
 
     public static void main(String[] args) {
-        Scanner input = new Scanner(System.in);
-        System.out.print("Input horizontal size: ");
-        hor = input.nextInt();
-        if (hor < 5) {
-            hor = 5;
-        }
-        if (hor > 100) {
-            hor = 100;
-        }
-        System.out.print("Input vertical size: ");
-        ver = input.nextInt();
-        if (ver < 5) {
-            ver = 5;
-        }
-        if (ver > 100) {
-            ver = 100;
-        }
-        input.close();
         launch(args);
     }
 }
