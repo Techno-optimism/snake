@@ -32,6 +32,7 @@ public class Grid extends Application {
     private GameOverScreen gameOverScreen;
     private DifficultyScreen difficultyScreen;
     private GameSizeScreen gameSizeScreen;
+    private SettingsScreen settingsScreen;
     private MovementTypeScreen movementTypeScreen;
     private MainMenuScreen mainMenuScreen;
     private GridPane gameGrid;
@@ -194,6 +195,15 @@ public class Grid extends Application {
                 mainMenuScreen.show();
             }
         );
+        
+        settingsScreen = new SettingsScreen(
+            () -> {
+                
+            },
+            () -> {
+                mainMenuScreen.show();
+            }
+        );
 
         mainMenuScreen = new MainMenuScreen(
             () -> {
@@ -215,6 +225,11 @@ public class Grid extends Application {
                 mainLayout.setTop(topBar);
                 topBar.getChildren().removeAll(scoreLabel, highScoreLabel);
                 gameSizeScreen.show();
+            },
+            () -> {
+                // Settings selected
+                mainMenuScreen.hide();
+                settingsScreen.show();
             }
         );
 
@@ -269,7 +284,8 @@ public class Grid extends Application {
             movementTypeScreen, // Layer 2
             difficultyScreen, // Layer 3
             gameSizeScreen, // Layer 4
-            mainMenuScreen); // Layer 5 (top)
+            settingsScreen, // Layer 5
+            mainMenuScreen); // Layer 6 (top)
 
         // Show the first screen
         mainMenuScreen.show();

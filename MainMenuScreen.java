@@ -24,7 +24,7 @@ public class MainMenuScreen extends StackPane {
     private Rectangle overlay;
     private ImagePattern island_bg;
 
-    public MainMenuScreen(Runnable onSelectClassic, Runnable onSelectTimed) {
+    public MainMenuScreen(Runnable onSelectClassic, Runnable onSelectTimed, Runnable onSelectSettings) {
         // Load a background image; if missing use a solid color background
         Image bgImage = new Image("file:resources/main_menu_island.png", false);
         if (!bgImage.isError()) {
@@ -109,13 +109,19 @@ public class MainMenuScreen extends StackPane {
             onSelectTimed.run();
         });
 
+        Button settingsButton = createCustomButton("Settings");
+        settingsButton.setOnAction(e -> {
+            this.hide();
+            onSelectSettings.run();
+        });
+
         Button quitButton = createCustomButton("Quit");
         quitButton.setOnAction(e -> System.exit(0));
 
         // Menu UI
         menuLayout = new VBox(20);
         menuLayout.setAlignment(Pos.CENTER);
-        menuLayout.getChildren().addAll(classicButton, timedButton, quitButton);
+        menuLayout.getChildren().addAll(classicButton, timedButton, settingsButton, quitButton);
         menuLayout.setTranslateY(100);
         menuLayout.setOpacity(0); // Start invisible to fade in on show
 
