@@ -12,6 +12,10 @@ public class SnakeGame {
     private Point food;
     private boolean gameOver;
     private MovementType movementType;
+    private static final int APPLE_RED = 1;
+    private static final int APPLE_BLUE = 2;
+    private static final int APPLE_PURPLE = 3;
+    private int appleType;
 
     private final Random random = new Random();
     private Deque<Direction> inputQueue = new ArrayDeque<>();
@@ -111,6 +115,15 @@ public class SnakeGame {
             // Any cell not on snake becomes food
             if (!snake.contains(candidate)) {
                 food = candidate;
+
+                int roll = random.nextInt(100);
+                if (roll < 70) {
+                    appleType = APPLE_RED;
+                } else if (roll < 90) {
+                    appleType = APPLE_BLUE;
+                } else if (roll < 100) {
+                    appleType = APPLE_PURPLE;
+                }
                 return;
             }
         }
@@ -140,6 +153,10 @@ public class SnakeGame {
 
     public Direction getDirection() {
         return this.direction;
+    }
+
+    public int getAppleType() {
+        return this.appleType;
     }
 
     public enum Direction {

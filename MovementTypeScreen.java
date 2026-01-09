@@ -36,7 +36,7 @@ public class MovementTypeScreen extends StackPane {
             bg.setMouseTransparent(true);
             this.getChildren().add(0, bg);
         } else {
-            // fallback background color
+            // Fallback background color
             Rectangle fallback = new Rectangle();
             fallback.setFill(Color.web("#3b2e22"));
             fallback.widthProperty().bind(this.widthProperty());
@@ -45,7 +45,7 @@ public class MovementTypeScreen extends StackPane {
         }
 
         try {
-            island_bg    = new ImagePattern(new Image("file:resources/main_menu_island.png", 0, 0, true, false));
+            island_bg    = new ImagePattern(new Image("file:resources/main_menu_island.png", 512, 512, true, false));
         } catch (Exception e) {
             System.out.println("Cant find images");
         }

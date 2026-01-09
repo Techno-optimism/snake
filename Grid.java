@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.util.Random;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 // import javafx.scene.control.skin.TextInputControlSkin.Direction;
@@ -34,6 +36,7 @@ public class Grid extends Application {
     private MainMenuScreen mainMenuScreen;
     private GridPane gameGrid;
     private HBox topBar;
+
     private int gameMode = 0;
     private int gameMovementType = 0;
     private static final int MODE_NONE = 0;
@@ -43,7 +46,6 @@ public class Grid extends Application {
     private static final int MOVEMENT_WRAP = 2;
     private BorderPane mainLayout;
 
-
     private int rows;
     private int columns;
     private int selectedRows;
@@ -51,8 +53,12 @@ public class Grid extends Application {
     private int currentSpeed = 150;
     private Label scoreLabel;
     private Label highScoreLabel;
-    private ImagePattern bodyPattern, tailPattern, applePattern;
+
+    private ImagePattern bodyPattern, tailPattern;
+    private ImagePattern blueApplePattern, redApplePattern, purpleApplePattern;
     private ImagePattern headUp, headDown, headLeft, headRight;
+
+    private final Random random = new Random();
 
     @Override
     public void start(Stage stage) {
@@ -150,6 +156,7 @@ public class Grid extends Application {
                 movementTypeScreen.show();
             },
             () -> {
+                System.out.println("GOING BACK TO SIZE SCREEN NOW");
                 gameSizeScreen.show();
             }
         );
@@ -160,9 +167,9 @@ public class Grid extends Application {
             // Reason: buildGrid() initializes the 'SnakeGame' logic, which requires
             // gameMovementType (Classic/Wrap) to be known. Since movement type is selected
             // later (in MovementTypeScreen), calling buildGrid() now 
-            // would lock in the wrong (default) movement rules.
+            // would lock in the wrong (default) movement rules
             //
-            // The actual grid building happens in MovementTypeScreen callbacks.
+            // The actual grid building happens in MovementTypeScreen callbacks
             () -> {
                 this.selectedRows = 7;
                 this.selectedCols = 7;
@@ -233,7 +240,7 @@ public class Grid extends Application {
                 startGame(currentSpeed);
             }, 
             () -> {
-                gameSizeScreen.show();
+                difficultyScreen.show();
             }
         );
 
@@ -243,6 +250,9 @@ public class Grid extends Application {
             headDown  = new ImagePattern(new Image("file:resources/Snake_head_down.png", 512, 512, true, false));
             headLeft  = new ImagePattern(new Image("file:resources/Snake_head_left.png", 512, 512, true, false));
             headRight = new ImagePattern(new Image("file:resources/Snake_head_right.png", 512, 512, true, false));
+            redApplePattern = new ImagePattern(new Image("file:resources/red_apple.png", 512, 512, true, false));
+            blueApplePattern = new ImagePattern(new Image("file:resources/blue_apple.png", 512, 512, true, false));
+            purpleApplePattern = new ImagePattern(new Image("file:resources/purple_apple.png", 512, 512, true, false));
 
         } catch (Exception e) {
             System.out.println("Cant find images");
@@ -328,7 +338,15 @@ public class Grid extends Application {
         // Draw food
         Point f = game.getFood();
         if (f != null) {
-            cells[f.x][f.y].setFill(Color.web("#b71c1c"));
+            // Random color for food
+            int type = game.getAppleType();
+            if (type == 1) {
+                cells[f.x][f.y].setFill(redApplePattern); // Red apple
+            } else if (type == 2) {
+                cells[f.x][f.y].setFill(blueApplePattern); // Blue apple
+            } else {
+                cells[f.x][f.y].setFill(purpleApplePattern); // Purple apple
+            }
         }
     }
 
@@ -381,19 +399,19 @@ public class Grid extends Application {
         cells = new Rectangle[rows][columns];
 
         System.out.println("Building grid. Type of movement: " + gameMovementType);
-        MovementType strategy = new ClassicMovement();
+        MovementType movementType = new ClassicMovement();
 
-        // Set movement strategy based on game mode
+        // Set movement type
         if (gameMovementType == MOVEMENT_CLASSIC) {
-            System.out.println("Using Classic Movement Strategy");
-            strategy = new ClassicMovement();
+            System.out.println("Using Classic Movement");
+            movementType = new ClassicMovement();
         }
         else if (gameMovementType == MOVEMENT_WRAP) {
-            System.out.println("Using Wrap Movement Strategy");
-            strategy = new WrapMovement();
+            System.out.println("Using Wrap Movement");
+            movementType = new WrapMovement();
         }
 
-        game = new SnakeGame(rows, columns, strategy);
+        game = new SnakeGame(rows, columns, movementType);
 
         double availableSize = 1150.0;
         double sizeBasedOnWidth = availableSize / columns;
