@@ -141,7 +141,7 @@ public class SimpleSnakeGame {
 
         // Initial head
         snake.addFirst(new Point(cx, cy));
-        // Inital tail
+        // Initial tail
         snake.addLast(new Point(cx, cy + 1));
 
         // Initial direction is left

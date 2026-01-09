@@ -1,4 +1,5 @@
 import javafx.application.Application;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
@@ -8,34 +9,35 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
 import java.awt.Point;
-import java.util.*;
 
 public class SimpleGrid extends Application {
 
     private Timeline loop;
+    private final int screenSizes = 1250;
+    private final int usableScreenSizes = 1200;
 
     @Override
     public void start(Stage stage) {
         GridPane pane = new GridPane();
+        pane.setPadding(new Insets(25, 0, 0, 25));
 
-        int n = hor;
-        int m = ver;
-        int cellSize = 50;
+        double cellSizeX = usableScreenSizes / (n+1);
+        double cellSizeY = usableScreenSizes / (m+1);
 
         Rectangle[][] cells = new Rectangle[n][m];
 
         for (int col = 0; col < n; col++) {
             for (int row = 0; row < m; row++) {
-                Rectangle cell = new Rectangle(cellSize, cellSize);
+                Rectangle cell = new Rectangle(cellSizeX, cellSizeY);
                 cell.setFill(Color.web("#f4c064"));
                 cell.setStroke(Color.web("#c0a060"));
                 pane.add(cell, col, row);
-                cells[col][row] = cell;    
+                cells[col][row] = cell;
             }
         }
 
-        int sceneWidth  = n * cellSize;
-        int sceneHeight = m * cellSize;
+        int sceneWidth = screenSizes;
+        int sceneHeight = screenSizes;
 
         Scene scene = new Scene(pane, sceneWidth, sceneHeight);
         stage.setScene(scene);
@@ -97,28 +99,24 @@ public class SimpleGrid extends Application {
         }
     }
 
-    public static int hor;
-    public static int ver;
+    public static int n;
+    public static int m;
 
     public static void main(String[] args) {
-        Scanner input = new Scanner(System.in);
-        System.out.print("Input horizontal size: ");
-        hor = input.nextInt();
-        if (hor < 5) {
-            hor = 5;
+        n = Integer.parseInt(args[0]);
+        if (n < 5) {
+            n = 5;
         }
-        if (hor > 100) {
-            hor = 100;
+        if (n > 100) {
+            n = 100;
         }
-        System.out.print("Input vertical size: ");
-        ver = input.nextInt();
-        if (ver < 5) {
-            ver = 5;
+        m = Integer.parseInt(args[1]);
+        if (m < 5) {
+            m = 5;
         }
-        if (ver > 100) {
-            ver = 100;
+        if (m > 100) {
+            m = 100;
         }
-        input.close();
         launch(args);
     }
 }
