@@ -55,9 +55,10 @@ public class Grid extends Application {
     private Label scoreLabel;
     private Label highScoreLabel;
 
-    private ImagePattern bodyPattern, tailPattern;
     private ImagePattern blueApplePattern, redApplePattern, purpleApplePattern;
     private ImagePattern headUp, headDown, headLeft, headRight;
+    private ImagePattern bodyHorizontal, bodyVertical, bodyUpRight, bodyUpLeft, bodyDownRight, bodyDownLeft;
+    private ImagePattern tailUp, tailDown, tailLeft, tailRight;
 
     private final Random random = new Random();
 
@@ -85,22 +86,29 @@ public class Grid extends Application {
 
         gameGrid = new GridPane();
         gameGrid.setAlignment(Pos.CENTER);
-        gameGrid.setStyle(
-            "-fx-background-color: #f4c064;" + // Background color
-            "-fx-border-color: #c0a060;" +     // Border color
-            "-fx-border-width: 2px;" +          // Border width
-            "-fx-border-style: solid;"         // Border style
+        gameGrid.setSnapToPixel(true);
+        gameGrid.setStyle("-fx-background-color: #f4c064;");
+
+        // Outer wall
+        StackPane gridContainer = new StackPane(gameGrid);
+        gridContainer.setStyle(
+            "-fx-background-color: #8B4513;" + // Outer wall
+            "-fx-padding: 10px;"               // Thickness of the wall
         );
 
-        // Add the grid to the game area; screens are added after they're constructed
-        gameArea.getChildren().add(gameGrid);
+        // Prevent grid from growing too large
+        gridContainer.setMaxSize(StackPane.USE_PREF_SIZE, StackPane.USE_PREF_SIZE);
+
+        // Add the container to the game area; screens are added after they're constructed
+        gameArea.getChildren().add(gridContainer);
 
         // Assemble BorderPane
         // top bar is attached only when a mode is selected
-        mainLayout.setCenter(gameArea);
+        mainLayout.setCenter(gridContainer);
 
         // Create a root StackPane so overlay screens can cover the whole window
         StackPane root = new StackPane();
+        root.setStyle("-fx-background-color: #f4c064;");
 
         // Create scene and set up stage
         Scene scene = new Scene(root, 1250, 1250);
@@ -163,9 +171,9 @@ public class Grid extends Application {
         );
 
         gameSizeScreen = new GameSizeScreen(
-            // NOTE: We only STORE the size here. We do NOT call buildGrid() yet.
+            // NOTE: The size is only stored here and buildGrid() is not called yet
             // 
-            // Reason: buildGrid() initializes the 'SnakeGame' logic, which requires
+            // Reason: buildGrid() initializes the SnakeGame logic, which requires
             // gameMovementType (Classic/Wrap) to be known. Since movement type is selected
             // later (in MovementTypeScreen), calling buildGrid() now 
             // would lock in the wrong (default) movement rules
@@ -261,10 +269,23 @@ public class Grid extends Application {
 
         // Load images for snake and food
         try {
-            headUp    = new ImagePattern(new Image("file:resources/Snake_head_up.png", 512, 512, true, false));
-            headDown  = new ImagePattern(new Image("file:resources/Snake_head_down.png", 512, 512, true, false));
-            headLeft  = new ImagePattern(new Image("file:resources/Snake_head_left.png", 512, 512, true, false));
-            headRight = new ImagePattern(new Image("file:resources/Snake_head_right.png", 512, 512, true, false));
+            headUp    = new ImagePattern(new Image("file:resources/Snake head/snake_head_up.png", 512, 512, true, false));
+            headDown  = new ImagePattern(new Image("file:resources/Snake head/snake_head_down.png", 512, 512, true, false));
+            headLeft  = new ImagePattern(new Image("file:resources/Snake head/snake_head_left.png", 512, 512, true, false));
+            headRight = new ImagePattern(new Image("file:resources/Snake head/snake_head_right.png", 512, 512, true, false));
+
+            bodyHorizontal = new ImagePattern(new Image("file:resources/Snake body/snake_body_horizontal.png", 512, 512, true, false));
+            bodyVertical = new ImagePattern(new Image("file:resources/Snake body/snake_body_vertical.png", 512, 512, true, false));
+            bodyUpRight = new ImagePattern(new Image("file:resources/Snake body/snake_body_up_right.png", 512, 512, true, false));
+            bodyUpLeft = new ImagePattern(new Image("file:resources/Snake body/snake_body_up_left.png", 512, 512, true, false));
+            bodyDownRight = new ImagePattern(new Image("file:resources/Snake body/snake_body_down_right.png", 512, 512, true, false));
+            bodyDownLeft = new ImagePattern(new Image("file:resources/Snake body/snake_body_down_left.png", 512, 512, true, false));
+
+            tailUp = new ImagePattern(new Image("file:resources/Snake tail/snake_tail_up.png", 512, 512, true, false));
+            tailDown = new ImagePattern(new Image("file:resources/Snake tail/snake_tail_down.png", 512, 512, true, false));
+            tailLeft = new ImagePattern(new Image("file:resources/Snake tail/snake_tail_left.png", 512, 512, true, false));
+            tailRight = new ImagePattern(new Image("file:resources/Snake tail/snake_tail_right.png", 512, 512, true, false));
+
             redApplePattern = new ImagePattern(new Image("file:resources/red_apple.png", 512, 512, true, false));
             blueApplePattern = new ImagePattern(new Image("file:resources/blue_apple.png", 512, 512, true, false));
             purpleApplePattern = new ImagePattern(new Image("file:resources/purple_apple.png", 512, 512, true, false));
@@ -310,7 +331,7 @@ public class Grid extends Application {
         for (int col = 0; col < n; col++) {
             for (int row = 0; row < m; row++) {
                 cells[col][row].setFill(Color.web("#f4c064"));
-                cells[col][row].setStroke(Color.web("#c0a060"));  
+                cells[col][row].setStroke(null); // No border
             }
         }
 
@@ -323,29 +344,83 @@ public class Grid extends Application {
         var snakeList = new ArrayList<>(game.getSnake());
 
         for (int i = 0; i < snakeList.size(); i++) {
-            Point p = snakeList.get(i);
+            // if (p.x < 0 || p.x >= columns || p.y < 0 || p.y >= rows) {
+            //     continue; // Skip invalid points
+            // }
 
-            if (p.x < 0 || p.x >= columns || p.y < 0 || p.y >= rows) {
-                continue; // Skip invalid points
+            Point current = snakeList.get(i);
+
+            // -----------------------------
+            //     Head (first element)
+            // -----------------------------
+            if (i == 0) {
+                Point neck = snakeList.size() > 1 ? snakeList.get(1) : null;
+
+                // Makes head keep its direction on wall collision (prevents decapitation of poor snake)
+                if (neck != null) {
+                    if (current.x > neck.x) {
+                        cells[current.x][current.y].setFill(headRight);
+                    } else if (current.x < neck.x) {
+                        cells[current.x][current.y].setFill(headLeft);
+                    } else if (current.y > neck.y) {
+                        cells[current.x][current.y].setFill(headDown);
+                    } else if (current.y < neck.y) {
+                        cells[current.x][current.y].setFill(headUp);
+                    }
+                // Default (on start)
+                } else {
+                    cells[current.x][current.y].setFill(headLeft); 
+                }
+
+            // -----------------------------
+            //     Tail (last element)
+            // -----------------------------
+            } else if (i == snakeList.size() - 1) {
+                // Segment connected to the tail
+                Point prev = snakeList.get(i - 1);
+
+                if (prev.y < current.y) {
+                cells[current.x][current.y].setFill(tailUp);
+                }
+                else if (prev.y > current.y) {
+                    cells[current.x][current.y].setFill(tailDown);
+                }
+                else if (prev.x < current.x) {
+                    cells[current.x][current.y].setFill(tailLeft);
+                }
+                else if (prev.x > current.x) {
+                    cells[current.x][current.y].setFill(tailRight);
+                }
             }
 
-            if (i == 0) {
-                SnakeGame.Direction d = game.getDirection();
-                if (d == null) d = SnakeGame.Direction.LEFT;
-                // Head
-                switch (d) {
-                    case UP: cells[p.x][p.y].setFill(headUp); break;
-                    case DOWN: cells[p.x][p.y].setFill(headDown); break;
-                    case LEFT: cells[p.x][p.y].setFill(headLeft); break;
-                    case RIGHT: cells[p.x][p.y].setFill(headRight); break;
-                }
-            } else {
-                // Body
-                cells[p.x][p.y].setFill(Color.web("#1b5e20"));   
+            // -----------------------------
+            //    Body (middle elements)
+            // -----------------------------
+            else {
+            Point prev = snakeList.get(i - 1);
+            Point next = snakeList.get(i + 1);
+
+            // Checks for neighbors
+            boolean left = (prev.x < current.x || next.x < current.x);
+            boolean right = (prev.x > current.x || next.x > current.x);
+            // Note: Y-axis is reversed
+            boolean up = (prev.y < current.y || next.y < current.y);
+            boolean down = (prev.y > current.y || next.y > current.y);
+
+            if (left && right) {
+                // Only left and right neighbors (horizontal mid body)
+                cells[current.x][current.y].setFill(bodyHorizontal);
+            }
+            else if (up && down) {
+                // Only up and down neighbors (vertical mid body)
+                cells[current.x][current.y].setFill(bodyVertical);
+            }
+            else if (up && right) cells[current.x][current.y].setFill(bodyUpRight);
+            else if (up && left) cells[current.x][current.y].setFill(bodyUpLeft);
+            else if (down && right) cells[current.x][current.y].setFill(bodyDownRight);
+            else if (down && left) cells[current.x][current.y].setFill(bodyDownLeft);
             }
         }
-
-
 
         //for (Point p : game.getSnake()) {
             //cells[p.x][p.y].setFill(Color.web("#1b5e20"));   
@@ -409,10 +484,10 @@ public class Grid extends Application {
 
         // Clear the old grid if it exists
         gameGrid.getChildren().clear();
-        gameGrid.setStyle("-fx-background-color: #f4c064; -fx-border-color: #c0a060; -fx-border-width: 2px;");
+        gameGrid.setStyle("-fx-background-color: #f4c064;"); 
 
-        // Initialize cells and game
-        cells = new Rectangle[rows][columns];
+        // Initialize cells
+        cells = new Rectangle[columns][rows];
 
         System.out.println("Building grid. Type of movement: " + gameMovementType);
         MovementType movementType = new ClassicMovement();
@@ -427,7 +502,7 @@ public class Grid extends Application {
             movementType = new WrapMovement();
         }
 
-        game = new SnakeGame(rows, columns, movementType);
+        game = new SnakeGame(columns, rows, movementType);
 
         double availableSize = 1150.0;
         double sizeBasedOnWidth = availableSize / columns;
@@ -439,15 +514,14 @@ public class Grid extends Application {
         gameGrid.setVgap(0);
 
         // Create grid cells
-        for (int col = 0; col < rows; col++) {
-            for (int row = 0; row < columns; row++) {
-                Rectangle cell = new Rectangle(cellSize, cellSize);
-                cell.setFill(Color.web("#f4c064")); // Background color
-                cell.setStroke(null);
+        for (int x = 0; x < columns; x++) {
+            for (int y = 0; y < rows; y++) {
+                Rectangle cell = new Rectangle(cellSize + 0.6, cellSize + 0.6); // + 0.6 to prevent segment gaps
+
                 // cell.setStrokeWidth(1.0);
                 // cell.setStrokeType(StrokeType.INSIDE); // Stroke inside to avoid increasing size of each cell
-                gameGrid.add(cell, col, row);
-                cells[col][row] = cell;    
+                gameGrid.add(cell, x, y);
+                cells[x][y] = cell;    
             }
         }
     }
