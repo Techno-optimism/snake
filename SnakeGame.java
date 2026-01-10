@@ -2,6 +2,7 @@ import java.awt.Point;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Random;
+import Audio.Sound;
 
 public class SnakeGame {
     private final int width;
@@ -19,6 +20,8 @@ public class SnakeGame {
 
     private final Random random = new Random();
     private Deque<Direction> inputQueue = new ArrayDeque<>();
+
+    Sound sound = new Sound();
 
     public SnakeGame(int width, int height, MovementType movementType) {
         this.width = width;
@@ -88,6 +91,8 @@ public class SnakeGame {
         if (newHead.equals(food)) {
             // Tail isn't removed, snake grows
             spawnFood();
+            //Sound effect for eating food
+            playSE(1);
         } else {
             // Move without growing, remove tail
             snake.removeLast();
@@ -161,5 +166,12 @@ public class SnakeGame {
 
     public enum Direction {
         UP, DOWN, LEFT, RIGHT
+    }
+
+    //playSE used for sound effect
+    public void playSE(int i) {
+
+        sound.setFile(i);
+        sound.play();
     }
 }

@@ -17,12 +17,15 @@ import javafx.scene.paint.ImagePattern;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.animation.ScaleTransition;
+import Audio.Sound;
 
 public class MainMenuScreen extends StackPane {
     private Label title;
     private VBox menuLayout;
     private Rectangle overlay;
     private ImagePattern island_bg;
+
+    Sound sound = new Sound();
 
     public MainMenuScreen(Runnable onSelectClassic, Runnable onSelectTimed, Runnable onSelectSettings) {
         // Load a background image; if missing use a solid color background
@@ -128,6 +131,9 @@ public class MainMenuScreen extends StackPane {
         // Stack
         this.getChildren().addAll(title, menuLayout);
         this.setVisible(true);
+
+        // Play background music
+        playMusic(0);
     }
 
     private Button createCustomButton(String text) {
@@ -206,5 +212,17 @@ public class MainMenuScreen extends StackPane {
 
     public void hide() {
         this.setVisible(false);
+    }
+
+    public void playMusic(int i) {
+
+        sound.setFile(i);
+        sound.play();
+        sound.loop();
+    }
+    public void stopMusic() {
+
+        sound.stop();
+    
     }
 }
