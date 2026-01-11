@@ -13,16 +13,15 @@ import java.awt.Point;
 public class SimpleGrid extends Application {
 
     private Timeline loop;
-    private final int screenSizes = 1250;
-    private final int usableScreenSizes = 1200;
+    private final int screenSizes = 800;
+    private final int usableScreenSizes = 750;
 
     @Override
     public void start(Stage stage) {
         GridPane pane = new GridPane();
-        pane.setPadding(new Insets(25, 0, 0, 25));
 
-        double cellSizeX = usableScreenSizes / (n+1);
-        double cellSizeY = usableScreenSizes / (m+1);
+        double cellSizeX = ((usableScreenSizes+screenSizes) / 2) / n;
+        double cellSizeY = ((usableScreenSizes+screenSizes) / 2) / m;
 
         Rectangle[][] cells = new Rectangle[n][m];
 
