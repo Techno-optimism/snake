@@ -412,70 +412,117 @@ public class Grid extends Application {
 
                 // Makes head keep its direction on wall collision (prevents decapitation of poor snake)
                 if (neck != null) {
-                    if (current.x > neck.x) {
-                        cells[current.x][current.y].setFill(headRight);
-                    } else if (current.x < neck.x) {
-                        cells[current.x][current.y].setFill(headLeft);
-                    } else if (current.y > neck.y) {
-                        cells[current.x][current.y].setFill(headDown);
-                    } else if (current.y < neck.y) {
-                        cells[current.x][current.y].setFill(headUp);
-                    }
-                // Default (on start)
-                } else {
-                    cells[current.x][current.y].setFill(headLeft); 
-                }
+                    int dx = current.x - neck.x;
+                    int dy = current.y - neck.y;
 
+                    // Wrapping for head
+                    if (dx > 1) dx = -1;        // Head (higher x) on right edge pointing left, neck (lower x) on left edge (e.g. head x = 9, neck x = 0)
+                    else if (dx < -1) dx = 1;   // Head (lower x) on left edge pointing right, neck (higher x) on right edge
+                    
+                    if (dy > 1) dy = -1;        // Head (higher y) on botton edge pointing up, neck (lower y) on top edge (e.g. head y = 9, neck y = 0)
+                    else if (dy < -1) dy = 1;   // Head (lower y) on top edge pointing down, neck (higher y) on bottom edge
+
+                    // Standard movement
+                    if (dx == 1) cells[current.x][current.y].setFill(headRight);        // Difference in x is 1, so neck (lower x) is to the left of head (higher x), so head should point right
+                    else if (dx == -1) cells[current.x][current.y].setFill(headLeft);   // Difference in x is -1, so neck (higher x) is to the right of head (lower x), so head should point left
+                    else if (dy == 1) cells[current.x][current.y].setFill(headDown);    // Difference in y is 1, so neck (lower y) is above head (higher y), so head should point down
+                    else if (dy == -1) cells[current.x][current.y].setFill(headUp);     // Difference in y is -1, so neck (higher y) is above head (lower y), so head should point up
+                } else {
+                    cells[current.x][current.y].setFill(headLeft); // Default
+                }
+            }
             // -----------------------------
             //     Tail (last element)
             // -----------------------------
-            } else if (i == snakeList.size() - 1) {
+            else if (i == snakeList.size() - 1) {
                 // Segment connected to the tail
                 Point prev = snakeList.get(i - 1);
 
-                if (prev.y < current.y) {
-                cells[current.x][current.y].setFill(tailUp);
-                }
-                else if (prev.y > current.y) {
-                    cells[current.x][current.y].setFill(tailDown);
-                }
-                else if (prev.x < current.x) {
-                    cells[current.x][current.y].setFill(tailLeft);
-                }
-                else if (prev.x > current.x) {
-                    cells[current.x][current.y].setFill(tailRight);
-                }
+                int dx = prev.x - current.x;
+                int dy = prev.y - current.y;
+
+                // Wrapping for tail
+                if (dx > 1) dx = -1;        // Tail (lower x) on the left edge pointing left, body (higher x) on the right edge
+                else if (dx < -1) dx = 1;   // Tail (higher x) on the right edge pointing right, body (lower x) on the left edge
+
+                if (dy > 1) dy = -1;        // Tail (lower y) on the top edge pointing up, body (higher y) on the bottom edge
+                else if (dy < -1) dy = 1;   // Tail (higher y) on the bottom edge pointing down, body (lower y) on the top edge
+
+                // Standard movement
+                if (dx == 1) cells[current.x][current.y].setFill(tailRight);        // Difference in x is 1, so body (higher x) is to the right of tail (lower x), so tail should go right
+                else if (dx == -1) cells[current.x][current.y].setFill(tailLeft);   // Difference in x is -1, so body (lower x) is to the left of tail (higher x), so tail should go left
+                else if (dy == 1) cells[current.x][current.y].setFill(tailDown);    // Difference in y is 1, so body (higher y) is below tail (lower y), so tail should go down
+                else if (dy == -1) cells[current.x][current.y].setFill(tailUp);     // Difference in y is -1 so body (lower y) is above tail (higher y), so tail should go up
             }
 
             // -----------------------------
             //    Body (middle elements)
             // -----------------------------
             else {
-            Point prev = snakeList.get(i - 1);
-            Point next = snakeList.get(i + 1);
+                Point prev = snakeList.get(i - 1);
+                Point next = snakeList.get(i + 1);
 
-            // Checks for neighbors
-            boolean left = (prev.x < current.x || next.x < current.x);
-            boolean right = (prev.x > current.x || next.x > current.x);
-            // Note: Y-axis is reversed
-            boolean up = (prev.y < current.y || next.y < current.y);
-            boolean down = (prev.y > current.y || next.y > current.y);
+                // Neighbors
+                int dxPrev = prev.x - current.x;
+                int dyPrev = prev.y - current.y;
+                int dxNext = next.x - current.x;
+                int dyNext = next.y - current.y;
 
-            if (left && right) {
-                // Only left and right neighbors (horizontal mid body)
-                cells[current.x][current.y].setFill(bodyHorizontal);
-            }
-            else if (up && down) {
-                // Only up and down neighbors (vertical mid body)
-                cells[current.x][current.y].setFill(bodyVertical);
-            }
-            else if (up && right) cells[current.x][current.y].setFill(bodyUpRight);
-            else if (up && left) cells[current.x][current.y].setFill(bodyUpLeft);
-            else if (down && right) cells[current.x][current.y].setFill(bodyDownRight);
-            else if (down && left) cells[current.x][current.y].setFill(bodyDownLeft);
+                // Wrap (prev): When difference is large, it gets flipped
+                if (dxPrev > 1) dxPrev = -1;        
+                else if (dxPrev < -1) dxPrev = 1;   
+
+                if (dyPrev > 1) dyPrev = -1;       
+                else if (dyPrev < -1) dyPrev = 1;   
+
+                // Wrap (next): When difference is large, it gets flipped
+                if (dxNext > 1) dxNext = -1;
+                else if (dxNext < -1) dxNext = 1;
+
+                if (dyNext > 1) dyNext = -1;
+                else if (dyNext < -1) dyNext = 1;
+
+                // Left neighbors
+                // Moving left: If head/prev x = 4, current = 5 and tail = 6, then prev is to the left when (dxPrev = 4 - 5 = -1)
+                // Moving right: If head/ x = 6, current x = 5 and tail/next = 4, then next is to the left when (dxNext = 4 - 5 = -1)
+                boolean isLeft = (dxPrev == -1 || dxNext == -1);
+
+                // Right neighbors
+                // Moving right: If head/prev x = 6, current x = 5 and tail x = 4, then prev is to the right when (dxPrev = 6 - 5 = 1)
+                // Moving left: If head x = 4, current = 5 and tail/next = 6, then next is to the right when (dxNext = 6 - 5 = 1)
+                boolean isRight = (dxPrev == 1 || dxNext == 1); 
+
+                // Top neighbors
+                // Moving up: If head/prev y = 4, current y = 5 and tail = 6, then prev is above when (dyPrev = 4 - 5 = -1)
+                // Moving down: If head y = 6, current y = 5 and tail/next = 4, then next is above when (dyNext = 4 - 5 = -1)
+                boolean isUp = (dyPrev == -1 || dyNext == -1); // -1 is up in the grid
+
+                // Bottom neighbors
+                // Moving down: If head/prev y = 6, current y = 5 and tail = 4, then prev is below when (dyPrev = 6 - 5 = 1)
+                // Moving up: If head y = 4, current y = 5 and tail/next = 6, then next is below when (dyNext = 6 - 5 = 1)
+                boolean isDown = (dyPrev == 1 || dyNext == 1); // +1 is down in the grid
+
+                // Correct body segnment based on neighbors
+                if (isLeft && isRight) {
+                    cells[current.x][current.y].setFill(bodyHorizontal);
+                }
+                else if (isUp && isDown) {
+                    cells[current.x][current.y].setFill(bodyVertical);
+                }
+                else if (isUp && isRight) {
+                    cells[current.x][current.y].setFill(bodyUpRight);
+                }
+                else if (isUp && isLeft) {
+                    cells[current.x][current.y].setFill(bodyUpLeft);
+                }
+                else if (isDown && isRight) {
+                    cells[current.x][current.y].setFill(bodyDownRight);
+                }
+                else if (isDown && isLeft) {
+                    cells[current.x][current.y].setFill(bodyDownLeft);
+                }
             }
         }
-
         // Draw food
         Point f = game.getFood();
         if (f != null) {
