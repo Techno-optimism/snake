@@ -16,12 +16,16 @@ import javafx.animation.Timeline;
 import javafx.util.Duration;
 import java.awt.Point;
 import java.util.ArrayDeque;
+import java.awt.Dimension;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.image.Image;
+import javafx.stage.Screen;
 
 
 public class Grid extends Application {
@@ -54,6 +58,7 @@ public class Grid extends Application {
     private int currentSpeed = 150;
     private Label scoreLabel;
     private Label highScoreLabel;
+    private double screenWidth, screenHeight;
 
     private ImagePattern blueApplePattern, redApplePattern, purpleApplePattern;
     private ImagePattern headUp, headDown, headLeft, headRight;
@@ -111,7 +116,10 @@ public class Grid extends Application {
         root.setStyle("-fx-background-color: #f4c064;");
 
         // Create scene and set up stage
-        Scene scene = new Scene(root, 1250, 1250);
+        Rectangle2D bounds = Screen.getPrimary().getBounds();
+        screenWidth = bounds.getWidth();
+        screenHeight = bounds.getHeight();
+        Scene scene = new Scene(root, screenWidth * 0.55, screenHeight * 0.9);
 
         scene.setOnKeyPressed(event -> {
             if (game == null) return;
@@ -151,6 +159,7 @@ public class Grid extends Application {
             () -> {
                 currentSpeed = 250;
                 movementTypeScreen.show();
+                System.out.println(screenWidth);
             },
             () -> {
                 currentSpeed = 150;
@@ -291,7 +300,7 @@ public class Grid extends Application {
             purpleApplePattern = new ImagePattern(new Image("file:resources/purple_apple.png", 512, 512, true, false));
 
         } catch (Exception e) {
-            System.out.println("Cant find images");
+            System.out.println("Can't find images");
         }
 
         stage.setScene(scene);
@@ -337,7 +346,6 @@ public class Grid extends Application {
 
         int currentScore = game.getSnake().size() - 2;
         scoreLabel.setText("Score: " + currentScore);
-
 
 
         // Draw snake
@@ -504,10 +512,16 @@ public class Grid extends Application {
 
         game = new SnakeGame(columns, rows, movementType);
 
-        double availableSize = 1150.0;
-        double sizeBasedOnWidth = availableSize / columns;
-        double sizeBasedOnHeight = availableSize / rows;
-        double cellSize = Math.floor(Math.min(sizeBasedOnWidth, sizeBasedOnHeight));
+        // Max game size
+        double maxGameWidth = screenWidth * 0.6;
+        double maxGameHeight = screenHeight * 0.8;
+
+        // Cell size based on width, columns, height and rows
+        double cellFromWidth = maxGameWidth / columns;
+        double cellFromHeight = maxGameHeight / rows;
+
+        // Initialize with the smaller of the two
+        double cellSize = Math.floor(Math.min(cellFromWidth, cellFromHeight));
 
         // Avoid gaps from GridPane spacing
         gameGrid.setHgap(0);
