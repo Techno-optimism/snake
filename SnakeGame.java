@@ -11,8 +11,10 @@ public class SnakeGame {
     private Deque<Point> snake;
     private Direction direction;
     private Point food;
+    private boolean ateFood;
     private boolean gameOver;
     private MovementType movementType;
+
     private static final int APPLE_RED = 1;
     private static final int APPLE_BLUE = 2;
     private static final int APPLE_PURPLE = 3;
@@ -55,6 +57,8 @@ public class SnakeGame {
     public void step() {
         if (gameOver) return;
 
+        ateFood = false;
+
         if (!inputQueue.isEmpty()) {
             Direction nextMove = inputQueue.removeFirst();
 
@@ -89,9 +93,10 @@ public class SnakeGame {
 
         // Food
         if (newHead.equals(food)) {
+            ateFood = true;
             // Tail isn't removed, snake grows
             spawnFood();
-            //Sound effect for eating food
+            // Sound effect for eating food
             playSE(1);
         } else {
             // Move without growing, remove tail
@@ -132,6 +137,10 @@ public class SnakeGame {
                 return;
             }
         }
+    }
+    
+    public boolean hasEatenFood() {
+        return ateFood;
     }
 
     // Reset method called on restart click
