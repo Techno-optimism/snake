@@ -27,7 +27,7 @@ public class MainMenuScreen extends StackPane {
 
     Sound sound = new Sound();
 
-    public MainMenuScreen(Runnable onSelectClassic, Runnable onSelectTimed, Runnable onSelectSettings) {
+    public MainMenuScreen(Runnable onSelectClassic, Runnable onSelectTimed, Runnable onSelectStats, Runnable onSelectSettings) {
         // Load a background image; if missing use a solid color background
         Image bgImage = new Image("file:resources/main_menu_island.png", false);
         if (!bgImage.isError()) {
@@ -112,6 +112,12 @@ public class MainMenuScreen extends StackPane {
             onSelectTimed.run();
         });
 
+        Button statsButton = createCustomButton("Stats");
+        statsButton.setOnAction(e -> {
+            this.hide();
+            onSelectStats.run();
+        });
+
         Button settingsButton = createCustomButton("Settings");
         settingsButton.setOnAction(e -> {
             this.hide();
@@ -124,7 +130,7 @@ public class MainMenuScreen extends StackPane {
         // Menu UI
         menuLayout = new VBox(20);
         menuLayout.setAlignment(Pos.CENTER);
-        menuLayout.getChildren().addAll(classicButton, timedButton, settingsButton, quitButton);
+        menuLayout.getChildren().addAll(classicButton, timedButton, statsButton, settingsButton, quitButton);
         menuLayout.setTranslateY(100);
         menuLayout.setOpacity(0); // Start invisible to fade in on show
 

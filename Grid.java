@@ -23,6 +23,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.image.Image;
@@ -31,17 +32,23 @@ import javafx.stage.Screen;
 
 public class Grid extends Application {
 
+    private GridPane gameGrid;
+    private HBox topBar;
     private Timeline loop;
     private SnakeGame game;
     private Rectangle[][] cells;
+
     private GameOverScreen gameOverScreen;
     private DifficultyScreen difficultyScreen;
     private GameSizeScreen gameSizeScreen;
     private SettingsScreen settingsScreen;
     private MovementTypeScreen movementTypeScreen;
     private MainMenuScreen mainMenuScreen;
-    private GridPane gameGrid;
-    private HBox topBar;
+    private StatsScreen statsScreen;
+
+    private int totalGamesPlayed = 0;
+    private int classicHighScore = 0;
+    private int timedHighScore = 0;
 
     private int gameMode = 0;
     private int gameMovementType = 0;
@@ -52,7 +59,6 @@ public class Grid extends Application {
     private static final int MOVEMENT_WRAP = 2;
     private BorderPane mainLayout;
     private double screenWidth, screenHeight;
-
 
     private int rows;
     private int columns;
@@ -95,13 +101,14 @@ public class Grid extends Application {
         timerLabel = new Label("Time left: 0");
         timerLabel.setStyle("-fx-font-family: 'Comic Sans MS'; -fx-font-size: 20px; -fx-text-fill: black;");
 
-        // Top bar container (built in startGame())
+        // Top bar container
         topBar = new HBox(10);
         topBar.setPrefHeight(50);
         topBar.setAlignment(Pos.CENTER);
         topBar.setStyle("-fx-background-color: white; -fx-padding: 10;");
 
-        // Game area (stackpane)
+
+        // Game area (StackPane)
         StackPane gameArea = new StackPane();
 
         gameGrid = new GridPane();
@@ -151,21 +158,26 @@ public class Grid extends Application {
         gameOverScreen = new GameOverScreen(
             // On restart click
             () -> {
-                scoreLabel.setText("Score: 0");
                 game.reset();
 
-                // Reset timer state
                 elapsedMs = 0;
                 timeLeft = initialTime;
+                
+                // Only reset current score, not high score
+                if (gameMode == MODE_CLASSIC) {
+                    classicScoreLabel.setText("Score: 0");
+                } else if (gameMode == MODE_TIMED) {
+                    timedScoreLabel.setText("Score: 0");
+                }
+
                 if (gameMode == MODE_TIMED) {
                     timerLabel.setText("Time left: " + timeLeft);
                 }
-
                 startGame(currentSpeed);
             },
             // On exit to main menu click
             () -> {
-                scoreLabel.setText("Score: 0");
+                resetScoreLabels(); // Resets all labels
                 game.reset();
                 // hide grid and clear mode/ui
                 setGameGridVisible(false);
@@ -185,7 +197,6 @@ public class Grid extends Application {
                 initialTime = timeLeft;
                 foodBonus = 10;
                 movementTypeScreen.show();
-                System.out.println(screenWidth);
             },
             () -> {
                 currentSpeed = 150;
@@ -209,7 +220,6 @@ public class Grid extends Application {
                 movementTypeScreen.show();
             },
             () -> {
-                System.out.println("GOING BACK TO SIZE SCREEN NOW");
                 gameSizeScreen.show();
             }
         );
@@ -262,21 +272,19 @@ public class Grid extends Application {
                 // Classic mode selected
                 mainMenuScreen.hide();
                 gameMode = MODE_CLASSIC;
-                // Attaches top bar and makes score UI visible for classic
-                mainLayout.setTop(topBar);
-                if (!topBar.getChildren().contains(scoreLabel)) {
-                    topBar.getChildren().addAll(scoreLabel, highScoreLabel);
-                }
                 gameSizeScreen.show();
             },
             () -> {
                 // Timed mode selected
                 mainMenuScreen.hide();
                 gameMode = MODE_TIMED;
-                // Attaches the top bar but removes score UI for timed mode
-                mainLayout.setTop(topBar);
-                topBar.getChildren().removeAll(scoreLabel, highScoreLabel);
                 gameSizeScreen.show();
+            },
+            () -> {
+                // Stats selected
+                mainMenuScreen.hide();
+                statsScreen.updateData(totalGamesPlayed, classicHighScore, timedHighScore);
+                statsScreen.show();
             },
             () -> {
                 // Settings selected
@@ -285,11 +293,18 @@ public class Grid extends Application {
             }
         );
 
+        statsScreen = new StatsScreen(
+            () -> {
+                // Back mode selected
+                statsScreen.hide();
+                mainMenuScreen.show();
+            }
+        );
+
         movementTypeScreen = new MovementTypeScreen(
             () -> {
                 // Classic mode selected
                 movementTypeScreen.hide();
-                System.out.println("Classic movement selected");
                 gameMovementType = MOVEMENT_CLASSIC;
 
                 // Now the grid is built with the selected size and movement type
@@ -299,7 +314,6 @@ public class Grid extends Application {
             () -> {
                 // Wrap mode selected
                 movementTypeScreen.hide();
-                System.out.println("Wrap movement selected");
                 gameMovementType = MOVEMENT_WRAP;
 
                 // Now the grid is built with the selected size and movement type
@@ -350,7 +364,8 @@ public class Grid extends Application {
             difficultyScreen, // Layer 3
             gameSizeScreen, // Layer 4
             settingsScreen, // Layer 5
-            mainMenuScreen); // Layer 6 (top)
+            statsScreen, // Layer 6
+            mainMenuScreen); // Layer 7 (top)
 
         // Show the first screen
         mainMenuScreen.show();
@@ -379,18 +394,14 @@ public class Grid extends Application {
             }
         }
 
+        // Update the score
         int currentScore = game.getSnake().size() - 2;
-        scoreLabel.setText("Score: " + currentScore);
-
+        updateScoreLabel(currentScore);
 
         // Draw snake
         var snakeList = new ArrayList<>(game.getSnake());
 
         for (int i = 0; i < snakeList.size(); i++) {
-            // if (p.x < 0 || p.x >= columns || p.y < 0 || p.y >= rows) {
-            //     continue; // Skip invalid points
-            // }
-
             Point current = snakeList.get(i);
 
             // -----------------------------
@@ -465,10 +476,6 @@ public class Grid extends Application {
             }
         }
 
-        //for (Point p : game.getSnake()) {
-            //cells[p.x][p.y].setFill(Color.web("#1b5e20"));   
-        //}
-
         // Draw food
         Point f = game.getFood();
         if (f != null) {
@@ -485,70 +492,150 @@ public class Grid extends Application {
     }
 
     public void startGame(int speed) {
+        // Prevent double-speed bugs
+        if (loop != null) {
+            loop.stop();
+        }
+
         this.currentSpeed = speed;
         setGameGridVisible(true);
 
-        // Clear and rebuild top bar based on gamemode
-        topBar.getChildren().clear();
+        StackPane header = new StackPane();
+        header.setPrefHeight(50);
+        header.setStyle("-fx-background-color: white; -fx-padding: 0 20 0 20;");
 
         if (gameMode == MODE_CLASSIC) {
-            // Classic: score + high score only
-            HBox scoreBox = new HBox(5, scoreLabel)
-        } else if (gameMode == MODE_TIMED) {
-            if (!topBar.getChildren().contains(scoreLabel) && !topBar.getChildren().contains(timerLabel)) {
-                topBar.getChildren().addAll(timerLabel, scoreLabel, highScoreLabel);
-            }
+            // Right side: Score Box
+            HBox scoreBox = new HBox(30, classicScoreLabel, classicHighScoreLabel);
+            scoreBox.setAlignment(Pos.CENTER_RIGHT);
+            scoreBox.setMaxWidth(Double.MAX_VALUE);
+
+            // Force right
+            StackPane.setAlignment(scoreBox, Pos.CENTER_RIGHT);
+            header.getChildren().add(scoreBox);
+        } 
+        else if (gameMode == MODE_TIMED) {
+            // Timer (center)
+            timerLabel.setAlignment(Pos.CENTER);
+            header.getChildren().add(timerLabel);
+
+            // Score box (right)
+            HBox scoreBox = new HBox(30, timedScoreLabel, timedHighScoreLabel);
+            scoreBox.setAlignment(Pos.CENTER_RIGHT);
+            scoreBox.setMaxWidth(Double.MAX_VALUE);
+            scoreBox.setPickOnBounds(false);
+            
+            StackPane.setAlignment(scoreBox, Pos.CENTER_RIGHT);
+            header.getChildren().add(scoreBox);
         }
 
+        // Sets the top bar at the top of the screen
+        mainLayout.setTop(header);
+
+        // Reset displays
+        if (gameMode == MODE_TIMED) {
+            timerLabel.setText("Time left: " + initialTime);
+            // Ensures the timer is visible
+            timerLabel.setVisible(true);
+        }
+
+        // Initial draw
         draw(game, cells, rows, columns);
 
 
-        loop = new Timeline(
-            new KeyFrame(Duration.millis(speed), e -> {
-                game.step();
-                draw(game, cells, rows, columns);
+        loop = new Timeline(new KeyFrame(Duration.millis(speed), e -> {
+            game.step();
+            draw(game, cells, rows, columns);
 
-                if (gameMode == MODE_TIMED) {
-                    elapsedMs += currentSpeed;
-                    while (elapsedMs >= 1000) {
-                        elapsedMs -= 1000;
-                        timeLeft--;
-                    }
-
-                    if (game.hasEatenFood()) {
-                        timeLeft += foodBonus;
-                    }
-
-                    timerLabel.setText("Time left: " + timeLeft);
-
-                    if (timeLeft <= 0) {
-                        loop.stop();
-                        gameOverScreen.show();
-                        return;
-                    }
+            // Timed mode logic
+            if (gameMode == MODE_TIMED) {
+                elapsedMs += currentSpeed;
+                while (elapsedMs >= 1000) {
+                    elapsedMs -= 1000;
+                    timeLeft--;
                 }
 
-                if (game.isGameOver()) {
-                    gameOverScreen.show();
+                if (game.hasEatenFood()) {
+                    timeLeft += foodBonus;
+                }
 
-                    // Update high score if beaten
-                    int finalScore = game.getSnake().size() - 2;
-                    int previousHighScore = Integer.parseInt(highScoreLabel.getText().split(": ")[1]);
-                    if (finalScore > previousHighScore) {
-                        highScoreLabel.setText("High Score: " + finalScore);
-                    }
+                timerLabel.setText("Time left: " + timeLeft);
 
-                    // Reset timer
-                    if (gameMode == MODE_TIMED) {
-                        
-                    }
-
+                if (timeLeft <= 0) {
                     loop.stop();
+                    gameOverScreen.show();
+                    return;
                 }
-            })
-        );
+            }
+
+            // Update scores
+            int currentScore = game.getSnake().size() - 2;
+            updateScoreLabel(currentScore);
+
+            // Game over logic
+            if (game.isGameOver()) {
+                gameOverScreen.show();
+                int finalScore = game.getSnake().size() - 2;
+                updateHighScore(finalScore);
+                totalGamesPlayed++; // For stats screen
+                loop.stop();
+            }
+        }));
+
         loop.setCycleCount(Timeline.INDEFINITE);
         loop.play();
+    }
+
+    private void resetScoreLabels() {
+        classicScoreLabel.setText("Score: 0");
+        classicHighScoreLabel.setText("High Score: 0");
+        timedScoreLabel.setText("Score: 0");
+        timedHighScoreLabel.setText("High Score: 0");
+    }
+
+    private void updateScoreLabel(int score) {
+        if (gameMode == MODE_CLASSIC) {
+            classicScoreLabel.setText("Score: " + score);
+        } else if (gameMode == MODE_TIMED) {
+            timedScoreLabel.setText("Score: " + score);
+        }
+    }
+
+    private void updateHighScore(int score) {
+        Label highLabel = (gameMode == MODE_CLASSIC) ? classicHighScoreLabel : timedHighScoreLabel;
+        if (highLabel == null) return; // Safety check
+
+        try {
+            String text = highLabel.getText();
+            int currentHigh = 0;
+
+            if (text.contains(":")) {
+                String[] parts = text.split(":");
+                if (parts.length > 1) {
+                    currentHigh = Integer.parseInt(parts[1].trim());
+                }
+            } else {
+                // Parse the whole string as a number
+                if (!text.trim().isEmpty()) {
+                    currentHigh = Integer.parseInt(text.trim());
+                }
+            }
+
+            // Update if new score is higher
+            if (score > currentHigh) {
+                highLabel.setText("High Score: " + score);
+            }
+        }
+        catch (NumberFormatException e) {
+            // If parsing fails, set the new score
+            highLabel.setText("High Score: " + score);
+        }
+
+        if (gameMode == MODE_CLASSIC) {
+            if (score > classicHighScore) classicHighScore = score;
+        } else if (gameMode == MODE_TIMED) {
+            if (score > timedHighScore) timedHighScore = score;
+        }
     }
 
     public void buildGrid(int newRows, int newColumns) {
@@ -562,16 +649,14 @@ public class Grid extends Application {
         // Initialize cells
         cells = new Rectangle[columns][rows];
 
-        System.out.println("Building grid. Type of movement: " + gameMovementType);
+        // Default movement type
         MovementType movementType = new ClassicMovement();
 
         // Set movement type
         if (gameMovementType == MOVEMENT_CLASSIC) {
-            System.out.println("Using Classic Movement");
             movementType = new ClassicMovement();
         }
         else if (gameMovementType == MOVEMENT_WRAP) {
-            System.out.println("Using Wrap Movement");
             movementType = new WrapMovement();
         }
 
@@ -596,9 +681,6 @@ public class Grid extends Application {
         for (int x = 0; x < columns; x++) {
             for (int y = 0; y < rows; y++) {
                 Rectangle cell = new Rectangle(cellSize + 0.6, cellSize + 0.6); // + 0.6 to prevent segment gaps
-
-                // cell.setStrokeWidth(1.0);
-                // cell.setStrokeType(StrokeType.INSIDE); // Stroke inside to avoid increasing size of each cell
                 gameGrid.add(cell, x, y);
                 cells[x][y] = cell;    
             }
