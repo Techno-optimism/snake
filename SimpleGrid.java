@@ -101,14 +101,26 @@ public class SimpleGrid extends Application {
     public static int m;
 
     public static void main(String[] args) {
-        n = Integer.parseInt(args[0]);
+        n = 10;
+        m = 10;
+        if (args.length == 0) {
+            n = 10;
+            m = 10;
+        }
+        else if (args.length == 1) {
+            n = Integer.parseInt(args[0]);
+            m = 10;
+        }
+        else {
+            n = Integer.parseInt(args[0]);
+            m = Integer.parseInt(args[1]);
+        }
         if (n < 5) {
             n = 5;
         }
         if (n > 100) {
             n = 100;
         }
-        m = Integer.parseInt(args[1]);
         if (m < 5) {
             m = 5;
         }
