@@ -35,6 +35,9 @@ public class SnakeGame {
 
         snake = new ArrayDeque<>();
 
+        // Stop background music when game starts
+        stopBKMusic(0);
+
         // Head
         snake.addFirst(new Point(cx, cy));
         // Body
@@ -97,7 +100,7 @@ public class SnakeGame {
             // Tail isn't removed, snake grows
             spawnFood();
             // Sound effect for eating food
-            playSE(1);
+            playEating(1);
         } else {
             // Move without growing, remove tail
             snake.removeLast();
@@ -178,9 +181,14 @@ public class SnakeGame {
     }
 
     //playSE used for sound effect
-    public void playSE(int i) {
+    public void playEating(int i) {
 
         sound.setFile(i);
         sound.play();
+    }
+    public void stopBKMusic(int i) {
+
+        sound.setFile(i);
+        sound.stop();
     }
 }

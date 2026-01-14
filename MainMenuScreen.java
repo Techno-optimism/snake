@@ -139,7 +139,8 @@ public class MainMenuScreen extends StackPane {
         this.setVisible(true);
 
         // Play background music
-        playMusic(0);
+        playBKMusic(0);
+        Sound.backgroundFC.setValue(-5);
     }
 
     private Button createCustomButton(String text) {
@@ -220,15 +221,10 @@ public class MainMenuScreen extends StackPane {
         this.setVisible(false);
     }
 
-    public void playMusic(int i) {
+    public void playBKMusic(int i) {
 
         sound.setFile(i);
         sound.play();
         sound.loop();
-    }
-    public void stopMusic() {
-
-        sound.stop();
-    
     }
 }

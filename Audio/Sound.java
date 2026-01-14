@@ -13,7 +13,7 @@ public class Sound {
     public double previousVolume = 0;
     public double currentVolume = 0;
     public boolean mute = false;
-
+    public static FloatControl backgroundFC;
 
     public Sound() {
 
@@ -29,6 +29,8 @@ public class Sound {
             AudioInputStream ais = AudioSystem.getAudioInputStream(soundURL[i]);
             clip = AudioSystem.getClip();
             clip.open(ais);
+
+            backgroundFC = (FloatControl)clip.getControl(FloatControl.Type.MASTER_GAIN);
 
         } catch(Exception e) {
 
@@ -48,14 +50,5 @@ public class Sound {
 
         clip.stop();
 
-    }
-    public void volumeUp() {
-
-    }
-    public void volumeDown() {
-
-    }
-    public void volumeMute() {
-        
     }
 }

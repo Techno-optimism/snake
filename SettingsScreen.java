@@ -8,6 +8,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
+import javax.sound.sampled.FloatControl;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javafx.beans.value.ObservableValue;
@@ -93,12 +94,12 @@ public class SettingsScreen extends StackPane {
 
         Label backgroundSoundLabel = new Label("Background Volume: " + -5);
 
-        Slider backgroundSoundSlider = new Slider(-80, 6, 1);
+        Slider backgroundSoundSlider = new Slider(-80, 6, -5);
         backgroundSoundSlider.setMin(-40);
         backgroundSoundSlider.setMax(6);
-        backgroundSoundSlider.setValue(-5);
-        backgroundSoundSlider.setPrefHeight(5);
-        backgroundSoundSlider.setPrefWidth(40);
+
+        backgroundSoundSlider.setMaxHeight(10);
+        backgroundSoundSlider.setMaxWidth(500);
 
         backgroundSoundSlider.valueProperty().addListener(
 
@@ -106,7 +107,13 @@ public class SettingsScreen extends StackPane {
 
                 public void changed(ObservableValue <? extends Number> observable, Number oldValue, Number newValue) {
 
-                    backgroundSoundLabel.setText("Background Volume: " + newValue);
+                    Double backgroundSoundSliderValue = backgroundSoundSlider.getValue();
+                    float backgroundSoundVolume = backgroundSoundSliderValue.floatValue();
+                    backgroundSoundVolume = newValue.floatValue();
+
+                    Sound.backgroundFC.setValue(backgroundSoundVolume);
+
+                    backgroundSoundLabel.setText("Background Volume: " + backgroundSoundVolume);
                 }
             }
         );
