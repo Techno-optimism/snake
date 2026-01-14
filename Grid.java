@@ -441,7 +441,7 @@ public class Grid extends Application {
                     if (dx > 1) dx = -1;        // Head (higher x) on right edge pointing left, neck (lower x) on left edge (e.g. head x = 9, neck x = 0)
                     else if (dx < -1) dx = 1;   // Head (lower x) on left edge pointing right, neck (higher x) on right edge
                     
-                    if (dy > 1) dy = -1;        // Head (higher y) on botton edge pointing up, neck (lower y) on top edge (e.g. head y = 9, neck y = 0)
+                    if (dy > 1) dy = -1;        // Head (higher y) on bottom edge pointing up, neck (lower y) on top edge (e.g. head y = 9, neck y = 0)
                     else if (dy < -1) dy = 1;   // Head (lower y) on top edge pointing down, neck (higher y) on bottom edge
 
                     // Standard movement
@@ -524,7 +524,7 @@ public class Grid extends Application {
                 // Moving up: If head y = 4, current y = 5 and tail/next = 6, then next is below when (dyNext = 6 - 5 = 1)
                 boolean isDown = (dyPrev == 1 || dyNext == 1); // +1 is down in the grid
 
-                // Correct body segnment based on neighbors
+                // Correct body segment based on neighbors
                 if (isLeft && isRight) {
                     cells[current.x][current.y].setFill(bodyHorizontal);
                 }
