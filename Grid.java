@@ -45,10 +45,13 @@ public class Grid extends Application {
     private MovementTypeScreen movementTypeScreen;
     private MainMenuScreen mainMenuScreen;
     private StatsScreen statsScreen;
+    private PauseScreen pauseScreen;
 
     private int totalGamesPlayed = 0;
     private int classicHighScore = 0;
     private int timedHighScore = 0;
+
+    private boolean paused = false;
 
     private int gameMode = 0;
     private int gameMovementType = 0;
@@ -107,7 +110,6 @@ public class Grid extends Application {
         topBar.setAlignment(Pos.CENTER);
         topBar.setStyle("-fx-background-color: white; -fx-padding: 10;");
 
-
         // Game area (StackPane)
         StackPane gameArea = new StackPane();
 
@@ -144,14 +146,31 @@ public class Grid extends Application {
         Scene scene = new Scene(root, screenWidth * 0.55, screenHeight * 0.9);
 
         scene.setOnKeyPressed(event -> {
-            if (game == null) return;
+            if (game == null)
+                return;
 
             switch (event.getCode()) {
-                case UP -> game.setDirection(SnakeGame.Direction.UP);
-                case DOWN -> game.setDirection(SnakeGame.Direction.DOWN);
-                case LEFT -> game.setDirection(SnakeGame.Direction.LEFT);
-                case RIGHT -> game.setDirection(SnakeGame.Direction.RIGHT);
-                default -> { }
+                case SPACE -> togglePause();
+
+                case UP -> {
+                    if (!paused)
+                        game.setDirection(SnakeGame.Direction.UP);
+                }
+                case DOWN -> {
+                    if (!paused)
+                        game.setDirection(SnakeGame.Direction.DOWN);
+                }
+                case LEFT -> {
+                    if (!paused)
+                        game.setDirection(SnakeGame.Direction.LEFT);
+                }
+                case RIGHT -> {
+                    if (!paused)
+                        game.setDirection(SnakeGame.Direction.RIGHT);
+                }
+
+                default -> {
+                }
             }
         });
 
@@ -293,6 +312,8 @@ public class Grid extends Application {
             }
         );
 
+        pauseScreen = new PauseScreen("file:resources/pause.png");
+
         statsScreen = new StatsScreen(
             () -> {
                 // Back mode selected
@@ -365,7 +386,8 @@ public class Grid extends Application {
             gameSizeScreen, // Layer 4
             settingsScreen, // Layer 5
             statsScreen, // Layer 6
-            mainMenuScreen); // Layer 7 (top)
+            pauseScreen, // Layer 7
+            mainMenuScreen); // Layer 8 (top)
 
         // Show the first screen
         mainMenuScreen.show();
@@ -419,7 +441,7 @@ public class Grid extends Application {
                     if (dx > 1) dx = -1;        // Head (higher x) on right edge pointing left, neck (lower x) on left edge (e.g. head x = 9, neck x = 0)
                     else if (dx < -1) dx = 1;   // Head (lower x) on left edge pointing right, neck (higher x) on right edge
                     
-                    if (dy > 1) dy = -1;        // Head (higher y) on botton edge pointing up, neck (lower y) on top edge (e.g. head y = 9, neck y = 0)
+                    if (dy > 1) dy = -1;        // Head (higher y) on bottom edge pointing up, neck (lower y) on top edge (e.g. head y = 9, neck y = 0)
                     else if (dy < -1) dy = 1;   // Head (lower y) on top edge pointing down, neck (higher y) on bottom edge
 
                     // Standard movement
@@ -502,7 +524,7 @@ public class Grid extends Application {
                 // Moving up: If head y = 4, current y = 5 and tail/next = 6, then next is below when (dyNext = 6 - 5 = 1)
                 boolean isDown = (dyPrev == 1 || dyNext == 1); // +1 is down in the grid
 
-                // Correct body segnment based on neighbors
+                // Correct body segment based on neighbors
                 if (isLeft && isRight) {
                     cells[current.x][current.y].setFill(bodyHorizontal);
                 }
@@ -631,6 +653,22 @@ public class Grid extends Application {
 
         loop.setCycleCount(Timeline.INDEFINITE);
         loop.play();
+    }
+
+    private void togglePause() {
+        paused = !paused;
+
+        if (paused) {
+            if (loop != null)
+                loop.pause();
+            if (pauseScreen != null)
+                pauseScreen.show();
+        } else {
+            if (pauseScreen != null)
+                pauseScreen.hide();
+            if (loop != null)
+                loop.play();
+        }
     }
 
     private void resetScoreLabels() {
