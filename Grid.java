@@ -29,7 +29,6 @@ import javafx.scene.paint.ImagePattern;
 import javafx.scene.image.Image;
 import javafx.stage.Screen;
 
-
 public class Grid extends Application {
 
     private GridPane gameGrid;
@@ -45,10 +44,13 @@ public class Grid extends Application {
     private MovementTypeScreen movementTypeScreen;
     private MainMenuScreen mainMenuScreen;
     private StatsScreen statsScreen;
+    private PauseScreen pauseScreen;
 
     private int totalGamesPlayed = 0;
     private int classicHighScore = 0;
     private int timedHighScore = 0;
+
+    private boolean paused = false;
 
     private int gameMode = 0;
     private int gameMovementType = 0;
@@ -68,10 +70,10 @@ public class Grid extends Application {
 
     private Label classicScoreLabel, timedScoreLabel;
     private Label classicHighScoreLabel, timedHighScoreLabel;
-    private Label timerLabel;                   // shows remaining time 
-    private double elapsedMs = 0;               // elapsed time
-    private int initialTime, timeLeft;          // in seconds
-    private int foodBonus;                      // timer increase per food  
+    private Label timerLabel; // shows remaining time
+    private double elapsedMs = 0; // elapsed time
+    private int initialTime, timeLeft; // in seconds
+    private int foodBonus; // timer increase per food
 
     private ImagePattern blueApplePattern, redApplePattern, purpleApplePattern;
     private ImagePattern headUp, headDown, headLeft, headRight;
@@ -107,7 +109,6 @@ public class Grid extends Application {
         topBar.setAlignment(Pos.CENTER);
         topBar.setStyle("-fx-background-color: white; -fx-padding: 10;");
 
-
         // Game area (StackPane)
         StackPane gameArea = new StackPane();
 
@@ -119,14 +120,15 @@ public class Grid extends Application {
         // Outer wall
         StackPane gridContainer = new StackPane(gameGrid);
         gridContainer.setStyle(
-            "-fx-background-color: #8B4513;" + // Outer wall
-            "-fx-padding: 10px;"               // Thickness of the wall
+                "-fx-background-color: #8B4513;" + // Outer wall
+                        "-fx-padding: 10px;" // Thickness of the wall
         );
 
         // Prevent grid from growing too large
         gridContainer.setMaxSize(StackPane.USE_PREF_SIZE, StackPane.USE_PREF_SIZE);
 
-        // Add the container to the game area; screens are added after they're constructed
+        // Add the container to the game area; screens are added after they're
+        // constructed
         gameArea.getChildren().add(gridContainer);
 
         // Assemble BorderPane
@@ -144,205 +146,229 @@ public class Grid extends Application {
         Scene scene = new Scene(root, screenWidth * 0.55, screenHeight * 0.9);
 
         scene.setOnKeyPressed(event -> {
-            if (game == null) return;
+            if (game == null)
+                return;
 
             switch (event.getCode()) {
-                case UP -> game.setDirection(SnakeGame.Direction.UP);
-                case DOWN -> game.setDirection(SnakeGame.Direction.DOWN);
-                case LEFT -> game.setDirection(SnakeGame.Direction.LEFT);
-                case RIGHT -> game.setDirection(SnakeGame.Direction.RIGHT);
-                default -> { }
+                case SPACE -> togglePause();
+
+                case UP -> {
+                    if (!paused)
+                        game.setDirection(SnakeGame.Direction.UP);
+                }
+                case DOWN -> {
+                    if (!paused)
+                        game.setDirection(SnakeGame.Direction.DOWN);
+                }
+                case LEFT -> {
+                    if (!paused)
+                        game.setDirection(SnakeGame.Direction.LEFT);
+                }
+                case RIGHT -> {
+                    if (!paused)
+                        game.setDirection(SnakeGame.Direction.RIGHT);
+                }
+
+                default -> {
+                }
             }
         });
 
         gameOverScreen = new GameOverScreen(
-            // On restart click
-            () -> {
-                game.reset();
+                // On restart click
+                () -> {
+                    game.reset();
 
-                elapsedMs = 0;
-                timeLeft = initialTime;
-                
-                // Only reset current score, not high score
-                if (gameMode == MODE_CLASSIC) {
-                    classicScoreLabel.setText("Score: 0");
-                } else if (gameMode == MODE_TIMED) {
-                    timedScoreLabel.setText("Score: 0");
-                }
+                    elapsedMs = 0;
+                    timeLeft = initialTime;
 
-                if (gameMode == MODE_TIMED) {
-                    timerLabel.setText("Time left: " + timeLeft);
-                }
-                startGame(currentSpeed);
-            },
-            // On exit to main menu click
-            () -> {
-                resetScoreLabels(); // Resets all labels
-                game.reset();
-                // hide grid and clear mode/ui
-                setGameGridVisible(false);
-                gameMode = MODE_NONE;
-                topBar.getChildren().clear();
-                mainLayout.setTop(null);
-                mainMenuScreen.show();
-            },
-            // On quit click
-            () -> System.exit(0)
-        );
+                    // Only reset current score, not high score
+                    if (gameMode == MODE_CLASSIC) {
+                        classicScoreLabel.setText("Score: 0");
+                    } else if (gameMode == MODE_TIMED) {
+                        timedScoreLabel.setText("Score: 0");
+                    }
+
+                    if (gameMode == MODE_TIMED) {
+                        timerLabel.setText("Time left: " + timeLeft);
+                    }
+                    startGame(currentSpeed);
+                },
+                // On exit to main menu click
+                () -> {
+                    resetScoreLabels(); // Resets all labels
+                    game.reset();
+                    // hide grid and clear mode/ui
+                    setGameGridVisible(false);
+                    gameMode = MODE_NONE;
+                    topBar.getChildren().clear();
+                    mainLayout.setTop(null);
+                    mainMenuScreen.show();
+                },
+                // On quit click
+                () -> System.exit(0));
 
         difficultyScreen = new DifficultyScreen(
-            () -> {
-                currentSpeed = 250;
-                timeLeft = 45;
-                initialTime = timeLeft;
-                foodBonus = 10;
-                movementTypeScreen.show();
-            },
-            () -> {
-                currentSpeed = 150;
-                timeLeft = 30;
-                initialTime = timeLeft;
-                foodBonus = 5;
-                movementTypeScreen.show();
-            },
-            () -> {
-                currentSpeed = 75;
-                timeLeft = 10;
-                initialTime = timeLeft;
-                foodBonus = 2;
-                movementTypeScreen.show();
-            },
-            () -> {
-                currentSpeed = 45;
-                timeLeft = 5;
-                initialTime = timeLeft;
-                foodBonus = 2;
-                movementTypeScreen.show();
-            },
-            () -> {
-                gameSizeScreen.show();
-            }
-        );
+                () -> {
+                    currentSpeed = 250;
+                    timeLeft = 45;
+                    initialTime = timeLeft;
+                    foodBonus = 10;
+                    movementTypeScreen.show();
+                },
+                () -> {
+                    currentSpeed = 150;
+                    timeLeft = 30;
+                    initialTime = timeLeft;
+                    foodBonus = 5;
+                    movementTypeScreen.show();
+                },
+                () -> {
+                    currentSpeed = 75;
+                    timeLeft = 10;
+                    initialTime = timeLeft;
+                    foodBonus = 2;
+                    movementTypeScreen.show();
+                },
+                () -> {
+                    currentSpeed = 45;
+                    timeLeft = 5;
+                    initialTime = timeLeft;
+                    foodBonus = 2;
+                    movementTypeScreen.show();
+                },
+                () -> {
+                    gameSizeScreen.show();
+                });
 
         gameSizeScreen = new GameSizeScreen(
-            // NOTE: The size is only stored here and buildGrid() is not called yet
-            // 
-            // Reason: buildGrid() initializes the SnakeGame logic, which requires
-            // gameMovementType (Classic/Wrap) to be known. Since movement type is selected
-            // later (in MovementTypeScreen), calling buildGrid() now 
-            // would lock in the wrong (default) movement rules
-            //
-            // The actual grid building happens in MovementTypeScreen callbacks
-            () -> {
-                this.selectedRows = 7;
-                this.selectedCols = 7;
-                difficultyScreen.show();
-            },
-            () -> {
-                this.selectedRows = 10;
-                this.selectedCols = 10;
-                difficultyScreen.show();
-            }, 
-            () -> {
-                this.selectedRows = 15;
-                this.selectedCols = 15;
-                difficultyScreen.show();
-            },
-            () -> {
-                this.selectedRows = 20;
-                this.selectedCols = 20;
-                difficultyScreen.show();
-            },
-            () -> {
-                mainMenuScreen.show();
-            }
-        );
-        
+                // NOTE: The size is only stored here and buildGrid() is not called yet
+                //
+                // Reason: buildGrid() initializes the SnakeGame logic, which requires
+                // gameMovementType (Classic/Wrap) to be known. Since movement type is selected
+                // later (in MovementTypeScreen), calling buildGrid() now
+                // would lock in the wrong (default) movement rules
+                //
+                // The actual grid building happens in MovementTypeScreen callbacks
+                () -> {
+                    this.selectedRows = 7;
+                    this.selectedCols = 7;
+                    difficultyScreen.show();
+                },
+                () -> {
+                    this.selectedRows = 10;
+                    this.selectedCols = 10;
+                    difficultyScreen.show();
+                },
+                () -> {
+                    this.selectedRows = 15;
+                    this.selectedCols = 15;
+                    difficultyScreen.show();
+                },
+                () -> {
+                    this.selectedRows = 20;
+                    this.selectedCols = 20;
+                    difficultyScreen.show();
+                },
+                () -> {
+                    mainMenuScreen.show();
+                });
+
         settingsScreen = new SettingsScreen(
-            () -> {
-                
-            },
-            () -> {
-                mainMenuScreen.show();
-            }
-        );
+                () -> {
+
+                },
+                () -> {
+                    mainMenuScreen.show();
+                });
 
         mainMenuScreen = new MainMenuScreen(
-            () -> {
-                // Classic mode selected
-                mainMenuScreen.hide();
-                gameMode = MODE_CLASSIC;
-                gameSizeScreen.show();
-            },
-            () -> {
-                // Timed mode selected
-                mainMenuScreen.hide();
-                gameMode = MODE_TIMED;
-                gameSizeScreen.show();
-            },
-            () -> {
-                // Stats selected
-                mainMenuScreen.hide();
-                statsScreen.updateData(totalGamesPlayed, classicHighScore, timedHighScore);
-                statsScreen.show();
-            },
-            () -> {
-                // Settings selected
-                mainMenuScreen.hide();
-                settingsScreen.show();
-            }
-        );
+                () -> {
+                    // Classic mode selected
+                    mainMenuScreen.hide();
+                    gameMode = MODE_CLASSIC;
+                    gameSizeScreen.show();
+                },
+                () -> {
+                    // Timed mode selected
+                    mainMenuScreen.hide();
+                    gameMode = MODE_TIMED;
+                    gameSizeScreen.show();
+                },
+                () -> {
+                    // Stats selected
+                    mainMenuScreen.hide();
+                    statsScreen.updateData(totalGamesPlayed, classicHighScore, timedHighScore);
+                    statsScreen.show();
+                },
+                () -> {
+                    // Settings selected
+                    mainMenuScreen.hide();
+                    settingsScreen.show();
+                });
+
+        pauseScreen = new PauseScreen("file:resources/pause.png");
 
         statsScreen = new StatsScreen(
-            () -> {
-                // Back mode selected
-                statsScreen.hide();
-                mainMenuScreen.show();
-            }
-        );
+                () -> {
+                    // Back mode selected
+                    statsScreen.hide();
+                    mainMenuScreen.show();
+                });
 
         movementTypeScreen = new MovementTypeScreen(
-            () -> {
-                // Classic mode selected
-                movementTypeScreen.hide();
-                gameMovementType = MOVEMENT_CLASSIC;
+                () -> {
+                    // Classic mode selected
+                    movementTypeScreen.hide();
+                    gameMovementType = MOVEMENT_CLASSIC;
 
-                // Now the grid is built with the selected size and movement type
-                buildGrid(selectedRows, selectedCols);
-                startGame(currentSpeed);
-            },
-            () -> {
-                // Wrap mode selected
-                movementTypeScreen.hide();
-                gameMovementType = MOVEMENT_WRAP;
+                    // Now the grid is built with the selected size and movement type
+                    buildGrid(selectedRows, selectedCols);
+                    startGame(currentSpeed);
+                },
+                () -> {
+                    // Wrap mode selected
+                    movementTypeScreen.hide();
+                    gameMovementType = MOVEMENT_WRAP;
 
-                // Now the grid is built with the selected size and movement type
-                buildGrid(selectedRows, selectedCols);
-                startGame(currentSpeed);
-            }, 
-            () -> {
-                difficultyScreen.show();
-            }
-        );
+                    // Now the grid is built with the selected size and movement type
+                    buildGrid(selectedRows, selectedCols);
+                    startGame(currentSpeed);
+                },
+                () -> {
+                    difficultyScreen.show();
+                });
 
         // Load images for snake and food
         try {
-            headUp    = new ImagePattern(new Image("file:resources/Snake head/snake_head_up.png", 512, 512, true, false));
-            headDown  = new ImagePattern(new Image("file:resources/Snake head/snake_head_down.png", 512, 512, true, false));
-            headLeft  = new ImagePattern(new Image("file:resources/Snake head/snake_head_left.png", 512, 512, true, false));
-            headRight = new ImagePattern(new Image("file:resources/Snake head/snake_head_right.png", 512, 512, true, false));
+            headUp = new ImagePattern(new Image("file:resources/Snake head/snake_head_up.png", 512, 512, true, false));
+            headDown = new ImagePattern(
+                    new Image("file:resources/Snake head/snake_head_down.png", 512, 512, true, false));
+            headLeft = new ImagePattern(
+                    new Image("file:resources/Snake head/snake_head_left.png", 512, 512, true, false));
+            headRight = new ImagePattern(
+                    new Image("file:resources/Snake head/snake_head_right.png", 512, 512, true, false));
 
-            bodyHorizontal = new ImagePattern(new Image("file:resources/Snake body/snake_body_horizontal.png", 512, 512, true, false));
-            bodyVertical = new ImagePattern(new Image("file:resources/Snake body/snake_body_vertical.png", 512, 512, true, false));
-            bodyUpRight = new ImagePattern(new Image("file:resources/Snake body/snake_body_up_right.png", 512, 512, true, false));
-            bodyUpLeft = new ImagePattern(new Image("file:resources/Snake body/snake_body_up_left.png", 512, 512, true, false));
-            bodyDownRight = new ImagePattern(new Image("file:resources/Snake body/snake_body_down_right.png", 512, 512, true, false));
-            bodyDownLeft = new ImagePattern(new Image("file:resources/Snake body/snake_body_down_left.png", 512, 512, true, false));
+            bodyHorizontal = new ImagePattern(
+                    new Image("file:resources/Snake body/snake_body_horizontal.png", 512, 512, true, false));
+            bodyVertical = new ImagePattern(
+                    new Image("file:resources/Snake body/snake_body_vertical.png", 512, 512, true, false));
+            bodyUpRight = new ImagePattern(
+                    new Image("file:resources/Snake body/snake_body_up_right.png", 512, 512, true, false));
+            bodyUpLeft = new ImagePattern(
+                    new Image("file:resources/Snake body/snake_body_up_left.png", 512, 512, true, false));
+            bodyDownRight = new ImagePattern(
+                    new Image("file:resources/Snake body/snake_body_down_right.png", 512, 512, true, false));
+            bodyDownLeft = new ImagePattern(
+                    new Image("file:resources/Snake body/snake_body_down_left.png", 512, 512, true, false));
 
             tailUp = new ImagePattern(new Image("file:resources/Snake tail/snake_tail_up.png", 512, 512, true, false));
-            tailDown = new ImagePattern(new Image("file:resources/Snake tail/snake_tail_down.png", 512, 512, true, false));
-            tailLeft = new ImagePattern(new Image("file:resources/Snake tail/snake_tail_left.png", 512, 512, true, false));
-            tailRight = new ImagePattern(new Image("file:resources/Snake tail/snake_tail_right.png", 512, 512, true, false));
+            tailDown = new ImagePattern(
+                    new Image("file:resources/Snake tail/snake_tail_down.png", 512, 512, true, false));
+            tailLeft = new ImagePattern(
+                    new Image("file:resources/Snake tail/snake_tail_left.png", 512, 512, true, false));
+            tailRight = new ImagePattern(
+                    new Image("file:resources/Snake tail/snake_tail_right.png", 512, 512, true, false));
 
             redApplePattern = new ImagePattern(new Image("file:resources/red_apple.png", 512, 512, true, false));
             blueApplePattern = new ImagePattern(new Image("file:resources/blue_apple.png", 512, 512, true, false));
@@ -358,14 +384,15 @@ public class Grid extends Application {
 
         // The screens are added to the root so they can cover the whole window
         root.getChildren().addAll(
-            mainLayout, // The game itself
-            gameOverScreen, // Layer 1
-            movementTypeScreen, // Layer 2
-            difficultyScreen, // Layer 3
-            gameSizeScreen, // Layer 4
-            settingsScreen, // Layer 5
-            statsScreen, // Layer 6
-            mainMenuScreen); // Layer 7 (top)
+                mainLayout, // The game itself
+                gameOverScreen, // Layer 1
+                movementTypeScreen, // Layer 2
+                difficultyScreen, // Layer 3
+                gameSizeScreen, // Layer 4
+                settingsScreen, // Layer 5
+                statsScreen, // Layer 6
+                mainMenuScreen, // Layer 7
+                pauseScreen); // Layer 8 (top)
 
         // Show the first screen
         mainMenuScreen.show();
@@ -405,124 +432,78 @@ public class Grid extends Application {
             Point current = snakeList.get(i);
 
             // -----------------------------
-            //     Head (first element)
+            // Head (first element)
             // -----------------------------
             if (i == 0) {
                 Point neck = snakeList.size() > 1 ? snakeList.get(1) : null;
 
-                // Makes head keep its direction on wall collision (prevents decapitation of poor snake)
+                // Makes head keep its direction on wall collision (prevents decapitation of
+                // poor snake)
                 if (neck != null) {
-                    int dx = current.x - neck.x;
-                    int dy = current.y - neck.y;
-
-                    // Wrapping for head
-                    if (dx > 1) dx = -1;        // Head (higher x) on right edge pointing left, neck (lower x) on left edge (e.g. head x = 9, neck x = 0)
-                    else if (dx < -1) dx = 1;   // Head (lower x) on left edge pointing right, neck (higher x) on right edge
-                    
-                    if (dy > 1) dy = -1;        // Head (higher y) on botton edge pointing up, neck (lower y) on top edge (e.g. head y = 9, neck y = 0)
-                    else if (dy < -1) dy = 1;   // Head (lower y) on top edge pointing down, neck (higher y) on bottom edge
-
-                    // Standard movement
-                    if (dx == 1) cells[current.x][current.y].setFill(headRight);        // Difference in x is 1, so neck (lower x) is to the left of head (higher x), so head should point right
-                    else if (dx == -1) cells[current.x][current.y].setFill(headLeft);   // Difference in x is -1, so neck (higher x) is to the right of head (lower x), so head should point left
-                    else if (dy == 1) cells[current.x][current.y].setFill(headDown);    // Difference in y is 1, so neck (lower y) is above head (higher y), so head should point down
-                    else if (dy == -1) cells[current.x][current.y].setFill(headUp);     // Difference in y is -1, so neck (higher y) is above head (lower y), so head should point up
+                    if (current.x > neck.x) {
+                        cells[current.x][current.y].setFill(headRight);
+                    } else if (current.x < neck.x) {
+                        cells[current.x][current.y].setFill(headLeft);
+                    } else if (current.y > neck.y) {
+                        cells[current.x][current.y].setFill(headDown);
+                    } else if (current.y < neck.y) {
+                        cells[current.x][current.y].setFill(headUp);
+                    }
+                // Default (on start)
                 } else {
-                    cells[current.x][current.y].setFill(headLeft); // Default
+                    cells[current.x][current.y].setFill(headLeft); 
                 }
-            }
+
             // -----------------------------
             //     Tail (last element)
             // -----------------------------
-            else if (i == snakeList.size() - 1) {
+            } else if (i == snakeList.size() - 1) {
                 // Segment connected to the tail
                 Point prev = snakeList.get(i - 1);
 
-                int dx = prev.x - current.x;
-                int dy = prev.y - current.y;
-
-                // Wrapping for tail
-                if (dx > 1) dx = -1;        // Tail (lower x) on the left edge pointing left, body (higher x) on the right edge
-                else if (dx < -1) dx = 1;   // Tail (higher x) on the right edge pointing right, body (lower x) on the left edge
-
-                if (dy > 1) dy = -1;        // Tail (lower y) on the top edge pointing up, body (higher y) on the bottom edge
-                else if (dy < -1) dy = 1;   // Tail (higher y) on the bottom edge pointing down, body (lower y) on the top edge
-
-                // Standard movement
-                if (dx == 1) cells[current.x][current.y].setFill(tailRight);        // Difference in x is 1, so body (higher x) is to the right of tail (lower x), so tail should go right
-                else if (dx == -1) cells[current.x][current.y].setFill(tailLeft);   // Difference in x is -1, so body (lower x) is to the left of tail (higher x), so tail should go left
-                else if (dy == 1) cells[current.x][current.y].setFill(tailDown);    // Difference in y is 1, so body (higher y) is below tail (lower y), so tail should go down
-                else if (dy == -1) cells[current.x][current.y].setFill(tailUp);     // Difference in y is -1 so body (lower y) is above tail (higher y), so tail should go up
+                if (prev.y < current.y) {
+                cells[current.x][current.y].setFill(tailUp);
+                }
+                else if (prev.y > current.y) {
+                    cells[current.x][current.y].setFill(tailDown);
+                }
+                else if (prev.x < current.x) {
+                    cells[current.x][current.y].setFill(tailLeft);
+                }
+                else if (prev.x > current.x) {
+                    cells[current.x][current.y].setFill(tailRight);
+                }
             }
 
             // -----------------------------
-            //    Body (middle elements)
+            // Body (middle elements)
             // -----------------------------
             else {
                 Point prev = snakeList.get(i - 1);
                 Point next = snakeList.get(i + 1);
 
-                // Neighbors
-                int dxPrev = prev.x - current.x;
-                int dyPrev = prev.y - current.y;
-                int dxNext = next.x - current.x;
-                int dyNext = next.y - current.y;
+            // Checks for neighbors
+            boolean left = (prev.x < current.x || next.x < current.x);
+            boolean right = (prev.x > current.x || next.x > current.x);
+            // Note: Y-axis is reversed
+            boolean up = (prev.y < current.y || next.y < current.y);
+            boolean down = (prev.y > current.y || next.y > current.y);
 
-                // Wrap (prev): When difference is large, it gets flipped
-                if (dxPrev > 1) dxPrev = -1;        
-                else if (dxPrev < -1) dxPrev = 1;   
-
-                if (dyPrev > 1) dyPrev = -1;       
-                else if (dyPrev < -1) dyPrev = 1;   
-
-                // Wrap (next): When difference is large, it gets flipped
-                if (dxNext > 1) dxNext = -1;
-                else if (dxNext < -1) dxNext = 1;
-
-                if (dyNext > 1) dyNext = -1;
-                else if (dyNext < -1) dyNext = 1;
-
-                // Left neighbors
-                // Moving left: If head/prev x = 4, current = 5 and tail = 6, then prev is to the left when (dxPrev = 4 - 5 = -1)
-                // Moving right: If head/ x = 6, current x = 5 and tail/next = 4, then next is to the left when (dxNext = 4 - 5 = -1)
-                boolean isLeft = (dxPrev == -1 || dxNext == -1);
-
-                // Right neighbors
-                // Moving right: If head/prev x = 6, current x = 5 and tail x = 4, then prev is to the right when (dxPrev = 6 - 5 = 1)
-                // Moving left: If head x = 4, current = 5 and tail/next = 6, then next is to the right when (dxNext = 6 - 5 = 1)
-                boolean isRight = (dxPrev == 1 || dxNext == 1); 
-
-                // Top neighbors
-                // Moving up: If head/prev y = 4, current y = 5 and tail = 6, then prev is above when (dyPrev = 4 - 5 = -1)
-                // Moving down: If head y = 6, current y = 5 and tail/next = 4, then next is above when (dyNext = 4 - 5 = -1)
-                boolean isUp = (dyPrev == -1 || dyNext == -1); // -1 is up in the grid
-
-                // Bottom neighbors
-                // Moving down: If head/prev y = 6, current y = 5 and tail = 4, then prev is below when (dyPrev = 6 - 5 = 1)
-                // Moving up: If head y = 4, current y = 5 and tail/next = 6, then next is below when (dyNext = 6 - 5 = 1)
-                boolean isDown = (dyPrev == 1 || dyNext == 1); // +1 is down in the grid
-
-                // Correct body segnment based on neighbors
-                if (isLeft && isRight) {
-                    cells[current.x][current.y].setFill(bodyHorizontal);
-                }
-                else if (isUp && isDown) {
-                    cells[current.x][current.y].setFill(bodyVertical);
-                }
-                else if (isUp && isRight) {
-                    cells[current.x][current.y].setFill(bodyUpRight);
-                }
-                else if (isUp && isLeft) {
-                    cells[current.x][current.y].setFill(bodyUpLeft);
-                }
-                else if (isDown && isRight) {
-                    cells[current.x][current.y].setFill(bodyDownRight);
-                }
-                else if (isDown && isLeft) {
-                    cells[current.x][current.y].setFill(bodyDownLeft);
-                }
+            if (left && right) {
+                // Only left and right neighbors (horizontal mid body)
+                cells[current.x][current.y].setFill(bodyHorizontal);
+            }
+            else if (up && down) {
+                // Only up and down neighbors (vertical mid body)
+                cells[current.x][current.y].setFill(bodyVertical);
+            }
+            else if (up && right) cells[current.x][current.y].setFill(bodyUpRight);
+            else if (up && left) cells[current.x][current.y].setFill(bodyUpLeft);
+            else if (down && right) cells[current.x][current.y].setFill(bodyDownRight);
+            else if (down && left) cells[current.x][current.y].setFill(bodyDownLeft);
             }
         }
+
         // Draw food
         Point f = game.getFood();
         if (f != null) {
@@ -560,8 +541,7 @@ public class Grid extends Application {
             // Force right
             StackPane.setAlignment(scoreBox, Pos.CENTER_RIGHT);
             header.getChildren().add(scoreBox);
-        } 
-        else if (gameMode == MODE_TIMED) {
+        } else if (gameMode == MODE_TIMED) {
             // Timer (center)
             timerLabel.setAlignment(Pos.CENTER);
             header.getChildren().add(timerLabel);
@@ -571,7 +551,7 @@ public class Grid extends Application {
             scoreBox.setAlignment(Pos.CENTER_RIGHT);
             scoreBox.setMaxWidth(Double.MAX_VALUE);
             scoreBox.setPickOnBounds(false);
-            
+
             StackPane.setAlignment(scoreBox, Pos.CENTER_RIGHT);
             header.getChildren().add(scoreBox);
         }
@@ -588,7 +568,6 @@ public class Grid extends Application {
 
         // Initial draw
         draw(game, cells, rows, columns);
-
 
         loop = new Timeline(new KeyFrame(Duration.millis(speed), e -> {
             game.step();
@@ -633,6 +612,22 @@ public class Grid extends Application {
         loop.play();
     }
 
+    private void togglePause() {
+        paused = !paused;
+
+        if (paused) {
+            if (loop != null)
+                loop.pause();
+            if (pauseScreen != null)
+                pauseScreen.show();
+        } else {
+            if (pauseScreen != null)
+                pauseScreen.hide();
+            if (loop != null)
+                loop.play();
+        }
+    }
+
     private void resetScoreLabels() {
         classicScoreLabel.setText("Score: 0");
         classicHighScoreLabel.setText("High Score: 0");
@@ -650,7 +645,8 @@ public class Grid extends Application {
 
     private void updateHighScore(int score) {
         Label highLabel = (gameMode == MODE_CLASSIC) ? classicHighScoreLabel : timedHighScoreLabel;
-        if (highLabel == null) return; // Safety check
+        if (highLabel == null)
+            return; // Safety check
 
         try {
             String text = highLabel.getText();
@@ -672,16 +668,17 @@ public class Grid extends Application {
             if (score > currentHigh) {
                 highLabel.setText("High Score: " + score);
             }
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             // If parsing fails, set the new score
             highLabel.setText("High Score: " + score);
         }
 
         if (gameMode == MODE_CLASSIC) {
-            if (score > classicHighScore) classicHighScore = score;
+            if (score > classicHighScore)
+                classicHighScore = score;
         } else if (gameMode == MODE_TIMED) {
-            if (score > timedHighScore) timedHighScore = score;
+            if (score > timedHighScore)
+                timedHighScore = score;
         }
     }
 
@@ -691,7 +688,7 @@ public class Grid extends Application {
 
         // Clear the old grid if it exists
         gameGrid.getChildren().clear();
-        gameGrid.setStyle("-fx-background-color: #f4c064;"); 
+        gameGrid.setStyle("-fx-background-color: #f4c064;");
 
         // Initialize cells
         cells = new Rectangle[columns][rows];
@@ -702,8 +699,7 @@ public class Grid extends Application {
         // Set movement type
         if (gameMovementType == MOVEMENT_CLASSIC) {
             movementType = new ClassicMovement();
-        }
-        else if (gameMovementType == MOVEMENT_WRAP) {
+        } else if (gameMovementType == MOVEMENT_WRAP) {
             movementType = new WrapMovement();
         }
 
@@ -729,7 +725,7 @@ public class Grid extends Application {
             for (int y = 0; y < rows; y++) {
                 Rectangle cell = new Rectangle(cellSize + 0.6, cellSize + 0.6); // + 0.6 to prevent segment gaps
                 gameGrid.add(cell, x, y);
-                cells[x][y] = cell;    
+                cells[x][y] = cell;
             }
         }
     }
