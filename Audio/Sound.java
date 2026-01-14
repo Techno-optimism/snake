@@ -4,11 +4,16 @@ import java.net.URL;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.FloatControl;
 
 public class Sound {
     
     Clip clip;
     URL soundURL[] = new URL[30];
+    public double previousVolume = 0;
+    public double currentVolume = 0;
+    public boolean mute = false;
+
 
     public Sound() {
 
@@ -43,5 +48,14 @@ public class Sound {
 
         clip.stop();
 
+    }
+    public void volumeUp() {
+
+    }
+    public void volumeDown() {
+
+    }
+    public void volumeMute() {
+        
     }
 }

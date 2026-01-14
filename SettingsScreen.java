@@ -1,8 +1,23 @@
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
+import javafx.scene.Group;
+import javafx.scene.Scene;
+import javafx.scene.control.Slider;
+import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
+import javafx.stage.Stage;
+
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javafx.beans.value.ObservableValue;
 import javafx.animation.FadeTransition;
 import javafx.animation.ScaleTransition;
+import javafx.beans.value.ChangeListener;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.effect.BlurType;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.StackPane;
@@ -17,6 +32,8 @@ import javafx.scene.paint.ImagePattern;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.animation.ScaleTransition;
+import Audio.Sound;
+import java.io.File;
 
 public class SettingsScreen extends StackPane {
     
@@ -73,6 +90,28 @@ public class SettingsScreen extends StackPane {
         selectSizeLabel.setTranslateY(-150);
 
         // Tiny button
+
+        Label backgroundSoundLabel = new Label("Background Volume: " + -5);
+
+        Slider backgroundSoundSlider = new Slider(-80, 6, 1);
+        backgroundSoundSlider.setMin(-40);
+        backgroundSoundSlider.setMax(6);
+        backgroundSoundSlider.setValue(-5);
+        backgroundSoundSlider.setPrefHeight(5);
+        backgroundSoundSlider.setPrefWidth(40);
+
+        backgroundSoundSlider.valueProperty().addListener(
+
+            new ChangeListener<Number>() {
+
+                public void changed(ObservableValue <? extends Number> observable, Number oldValue, Number newValue) {
+
+                    backgroundSoundLabel.setText("Background Volume: " + newValue);
+                }
+            }
+        );
+        
+
         Button tinyButton = createCustomButton("Tiny (7x7)");
         tinyButton.setOnAction(e -> {
             this.hide();
@@ -86,7 +125,7 @@ public class SettingsScreen extends StackPane {
             onBack.run();
         });
 
-        menuLayout.getChildren().addAll(tinyButton, backButton);
+        menuLayout.getChildren().addAll(backgroundSoundLabel, backgroundSoundSlider, backButton);
 
         // Add to StackPane, so menu is on top of overlay
         this.getChildren().addAll(menuLayout, selectSizeLabel);
