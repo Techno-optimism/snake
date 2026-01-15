@@ -7,8 +7,8 @@ public class Sound {
     Clip clip;
     URL[] soundURL = new URL[30];
     FloatControl volumeControl; 
-    boolean mute = false;
-    float previousVolume = 0;
+    //boolean mute = false;
+    //float previousVolume = 0;
     float currentVolume = -5.0f;
 
     public Sound() {
@@ -56,18 +56,18 @@ public class Sound {
         }
     }
    
-    public void toggleMute() {
-        if (volumeControl == null) return;
+    // public void toggleMute() {
+    //     if (volumeControl == null) return;
         
-        if (!mute) {
-            previousVolume = currentVolume;
-            currentVolume = -80.0f;
-            volumeControl.setValue(currentVolume);
-            mute = true;
-        } else {
-            currentVolume = previousVolume;
-            volumeControl.setValue(currentVolume);
-            mute = false;
-        }
-    }
+    //     if (!mute) {
+    //         previousVolume = currentVolume;
+    //         currentVolume = -80.0f;
+    //         volumeControl.setValue(currentVolume);
+    //         mute = true;
+    //     } else {
+    //         currentVolume = previousVolume;
+    //         volumeControl.setValue(currentVolume);
+    //         mute = false;
+    //     }
+    // }
 }
