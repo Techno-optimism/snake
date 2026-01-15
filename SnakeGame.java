@@ -139,7 +139,7 @@ public class SnakeGame {
             int fy = random.nextInt(height);
             Point candidate = new Point(fx, fy);
             // Any cell not on snake becomes food
-            if (!snake.contains(candidate)) {
+            if (!isOccupied(candidate)) {
                 food = candidate;
 
                 int roll = random.nextInt(100);
@@ -156,6 +156,10 @@ public class SnakeGame {
 
     }
 
+    public void setBombTTL(int ttl) {
+    this.bombTTL = ttl;
+}
+
     private boolean isOccupied(Point p) {
         if (snake.contains(p))
             return true;
@@ -167,11 +171,21 @@ public class SnakeGame {
         return false;
     }
 
+    private boolean isNearHead(Point p) {
+        Point h = snake.peekFirst();
+        int dx = Math.abs(p.x - h.x);
+        int dy = Math.abs(p.y - h.y);
+        return dx + dy <= 1; // blocks head + 4 neighbors
+    }
+
     private Point randomFreeCell(java.util.Random random) {
         for (int i = 0; i < 200; i++) {
             Point p = new Point(random.nextInt(width), random.nextInt(height));
-            if (!isOccupied(p))
-                return p;
+            if (isOccupied(p))
+                continue;
+            if (isNearHead(p))
+                continue; // <-- add this line
+            return p;
         }
         return null;
     }

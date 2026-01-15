@@ -51,6 +51,7 @@ public class Grid extends Application {
     private int timedHighScore = 0;
 
     private boolean paused = false;
+    private boolean bombsEnabled = false;
 
     private int gameMode = 0;
     private int gameMovementType = 0;
@@ -74,6 +75,7 @@ public class Grid extends Application {
     private double elapsedMs = 0; // elapsed time
     private int initialTime, timeLeft; // in seconds
     private int foodBonus; // timer increase per food
+    private int bombTTL = 30;
 
     private ImagePattern bombPattern;
     private ImagePattern blueApplePattern, redApplePattern, purpleApplePattern;
@@ -215,6 +217,8 @@ public class Grid extends Application {
                     timeLeft = 45;
                     initialTime = timeLeft;
                     foodBonus = 10;
+                    bombsEnabled = false;
+                    bombTTL = 0;
                     movementTypeScreen.show();
                 },
                 () -> {
@@ -222,6 +226,8 @@ public class Grid extends Application {
                     timeLeft = 30;
                     initialTime = timeLeft;
                     foodBonus = 5;
+                    bombsEnabled = false;
+                    bombTTL = 0;
                     movementTypeScreen.show();
                 },
                 () -> {
@@ -229,6 +235,8 @@ public class Grid extends Application {
                     timeLeft = 10;
                     initialTime = timeLeft;
                     foodBonus = 2;
+                    bombsEnabled = true;
+                    bombTTL = 100;
                     movementTypeScreen.show();
                 },
                 () -> {
@@ -236,6 +244,8 @@ public class Grid extends Application {
                     timeLeft = 5;
                     initialTime = timeLeft;
                     foodBonus = 2;
+                    bombsEnabled = true;
+                    bombTTL = 200;
                     movementTypeScreen.show();
                 },
                 () -> {
@@ -806,7 +816,8 @@ public class Grid extends Application {
         }
 
         game = new SnakeGame(columns, rows, movementType);
-        game.setBombsEnabled(true);
+        game.setBombsEnabled(bombsEnabled);
+        game.setBombTTL(bombTTL);
 
         // Max game size
         double maxGameWidth = screenWidth * 0.6;
