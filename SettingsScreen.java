@@ -9,8 +9,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 import javax.sound.sampled.FloatControl;
-import javax.swing.JSlider;
-import javax.swing.event.ChangeEvent;
+
 import javafx.beans.value.ObservableValue;
 import javafx.animation.FadeTransition;
 import javafx.animation.ScaleTransition;
@@ -42,7 +41,7 @@ public class SettingsScreen extends StackPane {
     private VBox menuLayout;
     private ImagePattern island_bg;
 
-    public SettingsScreen(Runnable onSelectTiny, Runnable onBack) {
+    public SettingsScreen(Runnable onBack, Sound music, Sound effects) {
         // Load a background image; if missing use a solid color background
         Image bgImage = new Image("file:resources/main_menu_island.png", false);
         if (!bgImage.isError()) {
@@ -88,43 +87,77 @@ public class SettingsScreen extends StackPane {
         selectSizeLabel = new Label("Settings");
         selectSizeLabel.setFont(Font.font("Comic Sans MS", FontWeight.BOLD, 50));
         selectSizeLabel.setTextFill(Color.web("#ffffffff"));
-        selectSizeLabel.setTranslateY(-150);
+        selectSizeLabel.setTranslateY(-110);
 
-        // Tiny button
+        // Background music volume slider
+        Label backgroundMusicLabel = new Label("Background Music: 75");
+        backgroundMusicLabel.setTextFill(Color.WHITE);
+        backgroundMusicLabel.setFont(Font.font("Comic Sans MS", 28));
 
-        Label backgroundSoundLabel = new Label("Background Volume: " + -5);
+        Slider backgroundMusicSlider = new Slider(0, 100, 75);
+        backgroundMusicSlider.setMaxHeight(20);
+        backgroundMusicSlider.setMaxWidth(400);
 
-        Slider backgroundSoundSlider = new Slider(-80, 6, -5);
-        backgroundSoundSlider.setMin(-40);
-        backgroundSoundSlider.setMax(6);
+        backgroundMusicSlider.valueProperty().addListener(
+            (observable, oldValue, newValue) -> {
+                float percentage = newValue.floatValue();
 
-        backgroundSoundSlider.setMaxHeight(10);
-        backgroundSoundSlider.setMaxWidth(500);
+                // 50%
+                backgroundMusicLabel.setText("Background Music: " + (int)percentage);
 
-        backgroundSoundSlider.valueProperty().addListener(
+                // 0 - 100 range
+                float range = 86.0f;
+                float dbVolume = -80.0f + (percentage / 100.0f) * range;
 
-            new ChangeListener<Number>() {
-
-                public void changed(ObservableValue <? extends Number> observable, Number oldValue, Number newValue) {
-
-                    Double backgroundSoundSliderValue = backgroundSoundSlider.getValue();
-                    float backgroundSoundVolume = backgroundSoundSliderValue.floatValue();
-                    backgroundSoundVolume = newValue.floatValue();
-
-                    Sound.backgroundFC.setValue(backgroundSoundVolume);
-
-                    backgroundSoundLabel.setText("Background Volume: " + backgroundSoundVolume);
+                // 0% is minimum
+                if (percentage <= 0) {
+                    dbVolume = -80.0f;
                 }
+
+                // 100% is max
+                if (percentage >= 100) {
+                    dbVolume = 6.0f;
+                }
+
+                music.setVolume(dbVolume);
             }
         );
+
+        // Effects volume slider
+        Label effectsLabel = new Label("Effects: 75");
+        effectsLabel.setTextFill(Color.WHITE);
+        effectsLabel.setFont(Font.font("Comic Sans MS", 28));
+
+        Slider effectsSlider = new Slider(0, 100, 75);
+        effectsSlider.setMaxHeight(20);
+        effectsSlider.setMaxWidth(400);
+
+        effectsSlider.valueProperty().addListener(
+            (observable, oldValue, newValue) -> {
+                float percentage = newValue.floatValue();
+
+                // 50%
+                effectsLabel.setText("Effects: " + (int)percentage);
+
+                // 0 - 100 range
+                float range = 86.0f;
+                float dbVolume = -80.0f + (percentage / 100.0f) * range;
+
+                // 0% is minimum
+                if (percentage <= 0) {
+                    dbVolume = -80.0f;
+                }
+
+                // 100% is max
+                if (percentage >= 100) {
+                    dbVolume = 6.0f;
+                }
+
+                effects.setVolume(dbVolume);
+            }
+        );
+
         
-
-        Button tinyButton = createCustomButton("Tiny (7x7)");
-        tinyButton.setOnAction(e -> {
-            this.hide();
-            onSelectTiny.run();
-        });
-
         // Back button
         Button backButton = createCustomButton("Back");
         backButton.setOnAction(e -> {
@@ -132,7 +165,7 @@ public class SettingsScreen extends StackPane {
             onBack.run();
         });
 
-        menuLayout.getChildren().addAll(backgroundSoundLabel, backgroundSoundSlider, backButton);
+        menuLayout.getChildren().addAll(backgroundMusicLabel, backgroundMusicSlider, effectsLabel, effectsSlider, backButton);
 
         // Add to StackPane, so menu is on top of overlay
         this.getChildren().addAll(menuLayout, selectSizeLabel);

@@ -29,6 +29,8 @@ import javafx.scene.paint.ImagePattern;
 import javafx.scene.image.Image;
 import javafx.stage.Screen;
 
+import Audio.Sound;
+
 
 public class Grid extends Application {
 
@@ -198,7 +200,7 @@ public class Grid extends Application {
             () -> {
                 resetScoreLabels(); // Resets all labels
                 game.reset();
-                // hide grid and clear mode/ui
+                // Hide grid and clear mode/ui
                 setGameGridVisible(false);
                 gameMode = MODE_NONE;
                 topBar.getChildren().clear();
@@ -276,15 +278,6 @@ public class Grid extends Application {
                 mainMenuScreen.show();
             }
         );
-        
-        settingsScreen = new SettingsScreen(
-            () -> {
-                
-            },
-            () -> {
-                mainMenuScreen.show();
-            }
-        );
 
         mainMenuScreen = new MainMenuScreen(
             () -> {
@@ -312,7 +305,28 @@ public class Grid extends Application {
             }
         );
 
-        pauseScreen = new PauseScreen("file:resources/pause.png");
+        settingsScreen = new SettingsScreen(
+            () -> {
+                mainMenuScreen.show(); },
+            mainMenuScreen.getMusic(),
+            mainMenuScreen.getEffects()
+        );
+
+        pauseScreen = new PauseScreen(
+            "file:resources/pause.png",
+            mainMenuScreen.getMusic(), 
+            mainMenuScreen.getEffects(),
+            () -> {
+                resetScoreLabels(); // Resets all labels
+                game.reset();
+                // Hide grid and clear mode/ui
+                setGameGridVisible(false);
+                gameMode = MODE_NONE;
+                topBar.getChildren().clear();
+                mainLayout.setTop(null);
+                mainMenuScreen.show();
+            }
+        );
 
         statsScreen = new StatsScreen(
             () -> {
@@ -745,7 +759,8 @@ public class Grid extends Application {
             movementType = new WrapMovement();
         }
 
-        game = new SnakeGame(columns, rows, movementType);
+        // Creates game (passes the music and effects objects into the constructor - music is only needed to change it in the game)
+        game = new SnakeGame(columns, rows, movementType, mainMenuScreen.getMusic(), mainMenuScreen.getEffects());
 
         // Max game size
         double maxGameWidth = screenWidth * 0.6;
