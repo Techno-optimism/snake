@@ -1,5 +1,6 @@
 import java.awt.Point;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Random;
 import Audio.Sound;
@@ -19,6 +20,11 @@ public class SnakeGame {
     private static final int APPLE_BLUE = 2;
     private static final int APPLE_PURPLE = 3;
     private int appleType;
+
+    private final ArrayList<Bomb> bombs = new ArrayList<>();
+    private boolean bombsEnabled = false;
+    private int bombTTL = 30; // lives 30 ticks
+    private double bombChance = 0.01;
 
     private final Random random = new Random();
     private Deque<Direction> inputQueue = new ArrayDeque<>();
@@ -45,7 +51,7 @@ public class SnakeGame {
         gameOver = false;
 
         // First food
-        spawnFood(); 
+        spawnFood();
     }
 
     public void setDirection(Direction newDir) {
@@ -55,18 +61,18 @@ public class SnakeGame {
     }
 
     public void step() {
-        if (gameOver) return;
+        if (gameOver)
+            return;
 
         ateFood = false;
 
         if (!inputQueue.isEmpty()) {
             Direction nextMove = inputQueue.removeFirst();
 
-            boolean isOpposite = 
-                (direction == Direction.UP && nextMove == Direction.DOWN) ||
-                (direction == Direction.DOWN && nextMove == Direction.UP) ||
-                (direction == Direction.LEFT && nextMove == Direction.RIGHT) ||
-                (direction == Direction.RIGHT && nextMove == Direction.LEFT);
+            boolean isOpposite = (direction == Direction.UP && nextMove == Direction.DOWN) ||
+                    (direction == Direction.DOWN && nextMove == Direction.UP) ||
+                    (direction == Direction.LEFT && nextMove == Direction.RIGHT) ||
+                    (direction == Direction.RIGHT && nextMove == Direction.LEFT);
 
             if (!isOpposite) {
                 direction = nextMove; // Update direction if valid
@@ -91,6 +97,15 @@ public class SnakeGame {
         // Normal move: add head
         snake.addFirst(newHead);
 
+        if (bombsEnabled) {
+            for (Bomb b : bombs) {
+                if (b.pos.equals(newHead)) { // or snake.peekFirst()
+                    gameOver = true;
+                    return; // stop this step immediately
+                }
+            }
+        }
+
         // Food
         if (newHead.equals(food)) {
             ateFood = true;
@@ -102,6 +117,7 @@ public class SnakeGame {
             // Move without growing, remove tail
             snake.removeLast();
         }
+
     }
 
     public Deque<Point> getSnake() {
@@ -137,8 +153,67 @@ public class SnakeGame {
                 return;
             }
         }
+
     }
-    
+
+    private boolean isOccupied(Point p) {
+        if (snake.contains(p))
+            return true;
+        if (food != null && food.equals(p))
+            return true;
+        for (Bomb b : bombs)
+            if (b.pos.equals(p))
+                return true;
+        return false;
+    }
+
+    private Point randomFreeCell(java.util.Random random) {
+        for (int i = 0; i < 200; i++) {
+            Point p = new Point(random.nextInt(width), random.nextInt(height));
+            if (!isOccupied(p))
+                return p;
+        }
+        return null;
+    }
+
+    public void updateBombs(java.util.Random random) {
+        if (!bombsEnabled)
+            return;
+
+        // despawn old bombs
+        for (int i = bombs.size() - 1; i >= 0; i--) {
+            Bomb b = bombs.get(i);
+            b.ttl--;
+            if (b.ttl <= 0)
+                bombs.remove(i);
+        }
+
+        // maybe spawn new bomb
+        if (random.nextDouble() < bombChance) {
+            Point p = randomFreeCell(random);
+            if (p != null)
+                bombs.add(new Bomb(p, bombTTL));
+        }
+    }
+
+    public void setBombsEnabled(boolean enabled) {
+        this.bombsEnabled = enabled;
+    }
+
+    public ArrayList<Bomb> getBombs() {
+        return bombs;
+    }
+
+    public static class Bomb {
+        public final Point pos;
+        public int ttl;
+
+        public Bomb(Point pos, int ttl) {
+            this.pos = pos;
+            this.ttl = ttl;
+        }
+    }
+
     public boolean hasEatenFood() {
         return ateFood;
     }
@@ -148,6 +223,7 @@ public class SnakeGame {
     public void reset() {
         snake.clear();
         inputQueue.clear(); // Clear input queue, so the snake doesn't move on new game
+        bombs.clear();
 
         int cx = width / 2;
         int cy = height / 2;
@@ -162,7 +238,7 @@ public class SnakeGame {
         gameOver = false;
 
         // Initial food
-        spawnFood(); 
+        spawnFood();
     }
 
     public Direction getDirection() {
@@ -177,7 +253,7 @@ public class SnakeGame {
         UP, DOWN, LEFT, RIGHT
     }
 
-    //playSE used for sound effect
+    // playSE used for sound effect
     public void playSE(int i) {
 
         sound.setFile(i);
