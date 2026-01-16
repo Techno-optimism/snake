@@ -37,26 +37,31 @@ public class SimpleSnakeGame {
         spawnFood(); 
     }
 
+    // Author: Emil
+    // Makes it so user can queue a max of 2 inputs
     public void setDirection(Direction newDir) {
         if (inputQueue.size() < 2) {
             inputQueue.addLast(newDir);
         }
     }
 
+    // Author: Emil
     public void step() {
         if (gameOver) return;
 
         if (!inputQueue.isEmpty()) {
             Direction nextMove = inputQueue.removeFirst();
 
+            // Prevents user from going opposite direction
             boolean isOpposite = 
                 (direction == Direction.UP && nextMove == Direction.DOWN) ||
                 (direction == Direction.DOWN && nextMove == Direction.UP) ||
                 (direction == Direction.LEFT && nextMove == Direction.RIGHT) ||
                 (direction == Direction.RIGHT && nextMove == Direction.LEFT);
 
+            // Update direction if valid
             if (!isOpposite) {
-                direction = nextMove; // Update direction if valid
+                direction = nextMove; 
             }
         }
 
@@ -66,9 +71,13 @@ public class SimpleSnakeGame {
 
         switch (direction) {
             case UP -> y--;
+            case W -> y--;
             case DOWN -> y++;
+            case S -> y++;
             case LEFT -> x--;
+            case A -> x--;
             case RIGHT -> x++;
+            case D -> x++;
         }
 
         x = (x + width) % width; // changes x and y values for toroidal wrapping
@@ -153,6 +162,6 @@ public class SimpleSnakeGame {
     }
 
     public enum Direction {
-        UP, DOWN, LEFT, RIGHT
+        UP, DOWN, LEFT, RIGHT, W, S, A, D
     }
 }
