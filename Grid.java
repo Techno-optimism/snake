@@ -28,6 +28,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.image.Image;
 import javafx.stage.Screen;
+import Audio.Sound;
 
 
 public class Grid extends Application {
@@ -283,15 +284,6 @@ public class Grid extends Application {
                 this.selectedRows = 20;
                 this.selectedCols = 20;
                 difficultyScreen.show();
-            },
-            () -> {
-                mainMenuScreen.show();
-            }
-        );
-        
-        settingsScreen = new SettingsScreen(
-            () -> {
-                
             },
             () -> {
                 mainMenuScreen.show();
@@ -844,7 +836,7 @@ public class Grid extends Application {
             movementType = new WrapMovement();
         }
 
-        game = new SnakeGame(columns, rows, movementType);
+        game = new SnakeGame(columns, rows, movementType, mainMenuScreen.getMusic(), mainMenuScreen.getEffects());
 
         // Max game size
         double maxGameWidth = screenWidth * 0.6;

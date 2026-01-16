@@ -107,6 +107,7 @@ public class SnakeGame {
         if (bombsEnabled) {
             for (Bomb b : bombs) {
                 if (b.pos.equals(newHead)) { // or snake.peekFirst()
+                    playExplosion(2);
                     gameOver = true;
                     return; // stop this step immediately
                 }
@@ -274,10 +275,15 @@ public class SnakeGame {
         UP, DOWN, LEFT, RIGHT
     }
 
-    //playSE used for sound effect
-    public void playSE(int i) {
+    //playEating and playExplosion used for sound effect
+    public void playEating(int i) {
 
-        sound.setFile(i);
-        sound.play();
+        effects.setFile(i);
+        effects.play();
+    }
+
+    public void playExplosion(int i) {
+        effects.setFile(i);
+        effects.play();
     }
 }
