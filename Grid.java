@@ -157,6 +157,8 @@ public class Grid extends Application {
 
             switch (event.getCode()) {
                 case SPACE -> togglePause();
+                case ESCAPE -> togglePause();
+                case P -> togglePause();
 
                 case UP -> {
                     if (!paused)
