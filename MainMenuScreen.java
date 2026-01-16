@@ -25,7 +25,9 @@ public class MainMenuScreen extends StackPane {
     private Rectangle overlay;
     private ImagePattern island_bg;
 
-    Sound sound = new Sound();
+    Sound music = new Sound();
+    Sound effects = new Sound();
+
 
     public MainMenuScreen(Runnable onSelectClassic, Runnable onSelectTimed, Runnable onSelectStats, Runnable onSelectSettings) {
         // Load a background image; if missing use a solid color background
@@ -81,10 +83,6 @@ public class MainMenuScreen extends StackPane {
         // fadeInOverlay.setToValue(0.25);
         // fadeInOverlay.play();
 
-        // Menu which will hold the buttons and label
-        VBox menu = new VBox(20);
-        menu.setAlignment(Pos.CENTER);
-
         title = new Label("SNAKE!");
         title.setFont(Font.font("Comic Sans MS", FontWeight.BOLD, 80));
         title.setTextFill(Color.rgb(105, 199, 22, 1));
@@ -139,8 +137,18 @@ public class MainMenuScreen extends StackPane {
         this.setVisible(true);
 
         // Play background music
-        playMusic(0);
+        playBKMusic(0);
+        music.setVolume(-5);
     }
+
+    public Sound getMusic() {
+        return this.music;
+    }
+
+    public Sound getEffects() {
+        return this.effects;
+    }
+
 
     private Button createCustomButton(String text) {
         Button btn = new Button(text);
@@ -220,15 +228,9 @@ public class MainMenuScreen extends StackPane {
         this.setVisible(false);
     }
 
-    public void playMusic(int i) {
-
-        sound.setFile(i);
-        sound.play();
-        sound.loop();
-    }
-    public void stopMusic() {
-
-        sound.stop();
-    
+    public void playBKMusic(int i) {
+        music.setFile(i);
+        music.play();
+        music.loop();
     }
 }

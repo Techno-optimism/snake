@@ -67,6 +67,7 @@ public class SimpleGrid extends Application {
 
         loop.setCycleCount(Timeline.INDEFINITE);
         loop.play();
+        stage.setTitle("Simple Snake Game");
 
         stage.show();
     }

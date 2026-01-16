@@ -29,17 +29,24 @@ public class SnakeGame {
     private final Random random = new Random();
     private Deque<Direction> inputQueue = new ArrayDeque<>();
 
-    Sound sound = new Sound();
+    private Sound music;
+    private Sound effects;
 
-    public SnakeGame(int width, int height, MovementType movementType) {
+    public SnakeGame(int width, int height, MovementType movementType, Sound music, Sound effects) {
         this.width = width;
         this.height = height;
         this.movementType = movementType;
+
+        this.music = music;
+        this.effects = effects;
 
         int cx = width / 2;
         int cy = height / 2;
 
         snake = new ArrayDeque<>();
+
+        // Stop background music when game starts
+        // stopBKMusic(0);
 
         // Head
         snake.addFirst(new Point(cx, cy));
@@ -111,8 +118,8 @@ public class SnakeGame {
             ateFood = true;
             // Tail isn't removed, snake grows
             spawnFood();
-            // Sound effect for eating food
-            playSE(1);
+            // Sound effect for eating food plays
+            playEating(1);
         } else {
             // Move without growing, remove tail
             snake.removeLast();
@@ -267,7 +274,7 @@ public class SnakeGame {
         UP, DOWN, LEFT, RIGHT
     }
 
-    // playSE used for sound effect
+    //playSE used for sound effect
     public void playSE(int i) {
 
         sound.setFile(i);
