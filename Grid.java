@@ -116,6 +116,7 @@ public class Grid extends Application {
         StackPane gameArea = new StackPane();
 
         gameGrid = new GridPane();
+        gameGrid.setFocusTraversable(true);
         gameGrid.setAlignment(Pos.CENTER);
         gameGrid.setSnapToPixel(true);
         gameGrid.setStyle("-fx-background-color: #f4c064;");
@@ -575,6 +576,9 @@ public class Grid extends Application {
     }
 
     public void startGame(int speed) {
+        // Resets pause state to prevent unresponsive controls when exiting to main menu and starting a new game (since paused stays true)
+        this.paused = false;
+        
         // Prevent double-speed bugs
         if (loop != null) {
             loop.stop();

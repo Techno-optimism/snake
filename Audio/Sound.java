@@ -26,6 +26,7 @@ public class Sound {
                  volumeControl = (FloatControl)clip.getControl(FloatControl.Type.MASTER_GAIN);
                  volumeControl.setValue(currentVolume); 
             }
+            
         } catch (Exception e) {
             e.printStackTrace(); 
         }
