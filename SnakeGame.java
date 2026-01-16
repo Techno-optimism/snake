@@ -103,7 +103,7 @@ public class SnakeGame {
             ateFood = true;
             // Tail isn't removed, snake grows
             spawnFood();
-            // Sound effect for eating food
+            // Sound effect for eating food plays
             playEating(1);
         } else {
             // Move without growing, remove tail
@@ -184,8 +184,13 @@ public class SnakeGame {
         UP, DOWN, LEFT, RIGHT
     }
 
-    //playSE used for sound effect
+    //playEating and playExplosion used for sound effects
     public void playEating(int i) {
+        effects.setFile(i);
+        effects.play();
+    }
+    
+    public void playExplosion(int i) {
         effects.setFile(i);
         effects.play();
     }
