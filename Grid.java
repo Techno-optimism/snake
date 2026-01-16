@@ -30,7 +30,6 @@ import javafx.scene.image.Image;
 import javafx.stage.Screen;
 import Audio.Sound;
 
-
 public class Grid extends Application {
 
     private GridPane gameGrid;
@@ -184,6 +183,8 @@ public class Grid extends Application {
                 // On restart click
                 () -> {
                     game.reset();
+                    game.setBombsEnabled(bombsEnabled);
+                    game.setBombTTL(bombTTL);
 
                     elapsedMs = 0;
                     timeLeft = initialTime;
@@ -195,25 +196,24 @@ public class Grid extends Application {
                         timedScoreLabel.setText("Score: 0");
                     }
 
-                if (gameMode == MODE_TIMED) {
-                    timerLabel.setText("Time left: " + timeLeft);
-                }
-                startGame(currentSpeed);
-            },
-            // On exit to main menu click
-            () -> {
-                resetScoreLabels(); // Resets all labels
-                game.reset();
-                // hide grid and clear mode/ui
-                setGameGridVisible(false);
-                gameMode = MODE_NONE;
-                topBar.getChildren().clear();
-                mainLayout.setTop(null);
-                mainMenuScreen.show();
-            },
-            // On quit click
-            () -> System.exit(0)
-        );
+                    if (gameMode == MODE_TIMED) {
+                        timerLabel.setText("Time left: " + timeLeft);
+                    }
+                    startGame(currentSpeed);
+                },
+                // On exit to main menu click
+                () -> {
+                    resetScoreLabels(); // Resets all labels
+                    game.reset();
+                    // hide grid and clear mode/ui
+                    setGameGridVisible(false);
+                    gameMode = MODE_NONE;
+                    topBar.getChildren().clear();
+                    mainLayout.setTop(null);
+                    mainMenuScreen.show();
+                },
+                // On quit click
+                () -> System.exit(0));
 
         difficultyScreen = new DifficultyScreen(
                 () -> {
@@ -257,38 +257,37 @@ public class Grid extends Application {
                 });
 
         gameSizeScreen = new GameSizeScreen(
-            // NOTE: The size is only stored here and buildGrid() is not called yet
-            // 
-            // Reason: buildGrid() initializes the SnakeGame logic, which requires
-            // gameMovementType (Classic/Wrap) to be known. Since movement type is selected
-            // later (in MovementTypeScreen), calling buildGrid() now 
-            // would lock in the wrong (default) movement rules
-            //
-            // The actual grid building happens in MovementTypeScreen callbacks
-            () -> {
-                this.selectedRows = 7;
-                this.selectedCols = 7;
-                difficultyScreen.show();
-            },
-            () -> {
-                this.selectedRows = 10;
-                this.selectedCols = 10;
-                difficultyScreen.show();
-            }, 
-            () -> {
-                this.selectedRows = 15;
-                this.selectedCols = 15;
-                difficultyScreen.show();
-            },
-            () -> {
-                this.selectedRows = 20;
-                this.selectedCols = 20;
-                difficultyScreen.show();
-            },
-            () -> {
-                mainMenuScreen.show();
-            }
-        );
+                // NOTE: The size is only stored here and buildGrid() is not called yet
+                //
+                // Reason: buildGrid() initializes the SnakeGame logic, which requires
+                // gameMovementType (Classic/Wrap) to be known. Since movement type is selected
+                // later (in MovementTypeScreen), calling buildGrid() now
+                // would lock in the wrong (default) movement rules
+                //
+                // The actual grid building happens in MovementTypeScreen callbacks
+                () -> {
+                    this.selectedRows = 7;
+                    this.selectedCols = 7;
+                    difficultyScreen.show();
+                },
+                () -> {
+                    this.selectedRows = 10;
+                    this.selectedCols = 10;
+                    difficultyScreen.show();
+                },
+                () -> {
+                    this.selectedRows = 15;
+                    this.selectedCols = 15;
+                    difficultyScreen.show();
+                },
+                () -> {
+                    this.selectedRows = 20;
+                    this.selectedCols = 20;
+                    difficultyScreen.show();
+                },
+                () -> {
+                    mainMenuScreen.show();
+                });
 
         mainMenuScreen = new MainMenuScreen(
                 () -> {
@@ -316,27 +315,26 @@ public class Grid extends Application {
                 });
 
         settingsScreen = new SettingsScreen(
-            () -> {
-                mainMenuScreen.show(); },
-            mainMenuScreen.getMusic(),
-            mainMenuScreen.getEffects()
-        );
+                () -> {
+                    mainMenuScreen.show();
+                },
+                mainMenuScreen.getMusic(),
+                mainMenuScreen.getEffects());
 
         pauseScreen = new PauseScreen(
-            "file:resources/pause.png",
-            mainMenuScreen.getMusic(), 
-            mainMenuScreen.getEffects(),
-            () -> {
-                resetScoreLabels(); // Resets all labels
-                game.reset();
-                // Hide grid and clear mode/ui
-                setGameGridVisible(false);
-                gameMode = MODE_NONE;
-                topBar.getChildren().clear();
-                mainLayout.setTop(null);
-                mainMenuScreen.show();
-            }
-        );
+                "file:resources/pause.png",
+                mainMenuScreen.getMusic(),
+                mainMenuScreen.getEffects(),
+                () -> {
+                    resetScoreLabels(); // Resets all labels
+                    game.reset();
+                    // Hide grid and clear mode/ui
+                    setGameGridVisible(false);
+                    gameMode = MODE_NONE;
+                    topBar.getChildren().clear();
+                    mainLayout.setTop(null);
+                    mainMenuScreen.show();
+                });
 
         statsScreen = new StatsScreen(
                 () -> {
@@ -649,9 +647,10 @@ public class Grid extends Application {
     }
 
     public void startGame(int speed) {
-        // Resets pause state to prevent unresponsive controls when exiting to main menu and starting a new game (since paused stays true)
+        // Resets pause state to prevent unresponsive controls when exiting to main menu
+        // and starting a new game (since paused stays true)
         this.paused = false;
-        
+
         // Prevent double-speed bugs
         if (loop != null) {
             loop.stop();
@@ -837,6 +836,8 @@ public class Grid extends Application {
         }
 
         game = new SnakeGame(columns, rows, movementType, mainMenuScreen.getMusic(), mainMenuScreen.getEffects());
+        game.setBombsEnabled(bombsEnabled);
+        game.setBombTTL(bombTTL);
 
         // Max game size
         double maxGameWidth = screenWidth * 0.6;
