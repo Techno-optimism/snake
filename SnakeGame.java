@@ -20,6 +20,11 @@ public class SnakeGame {
     private static final int APPLE_BLUE = 2;
     private static final int APPLE_PURPLE = 3;
     private int appleType;
+    private int pendingGrowth = 0; // how many segments to grow over upcoming steps
+    private int lastEatenAppleType = 0;
+    private int foodTtl = -1;
+    private int blueTtl = 40;
+    private int purpleTtl = 40;
 
     private final ArrayList<Bomb> bombs = new ArrayList<>();
     private boolean bombsEnabled = false;
@@ -117,13 +122,31 @@ public class SnakeGame {
         // Food
         if (newHead.equals(food)) {
             ateFood = true;
+
+            lastEatenAppleType = appleType; // IMPORTANT: save BEFORE spawnFood changes appleType
+
+            // growth amount: red=1, purple=2, blue=1 (or whatever you want)
+            if (appleType == APPLE_PURPLE)
+                pendingGrowth += 2;
+            else
+                pendingGrowth += 1;
             // Tail isn't removed, snake grows
             spawnFood();
             // Sound effect for eating food plays
             playEating(1);
+        }
+        if (pendingGrowth > 0) {
+            pendingGrowth--; // we keep tail => snake grows by 1 this step
         } else {
             // Move without growing, remove tail
             snake.removeLast();
+        }
+
+        if (foodTtl > 0) {
+            foodTtl--;
+            if (foodTtl == 0) {
+                spawnFood(); // despawn and respawn
+            }
         }
 
     }
@@ -151,22 +174,28 @@ public class SnakeGame {
                 food = candidate;
 
                 int roll = random.nextInt(100);
-                if (roll < 70) {
+                if (roll < 98) {
                     appleType = APPLE_RED;
-                } else if (roll < 90) {
+                } else if (roll < 99) {
                     appleType = APPLE_BLUE;
-                } else if (roll < 100) {
+                } else {
                     appleType = APPLE_PURPLE;
                 }
                 return;
             }
+            if (appleType == APPLE_BLUE)
+                foodTtl = blueTtl;
+            else if (appleType == APPLE_PURPLE)
+                foodTtl = purpleTtl;
+            else
+                foodTtl = -1; // red has no TTL (or set a TTL if you want)
         }
 
     }
 
     public void setBombTTL(int ttl) {
-    this.bombTTL = ttl;
-}
+        this.bombTTL = ttl;
+    }
 
     private boolean isOccupied(Point p) {
         if (snake.contains(p))
@@ -196,6 +225,12 @@ public class SnakeGame {
             return p;
         }
         return null;
+    }
+
+    public int consumeLastEatenAppleType() {
+        int t = lastEatenAppleType;
+        lastEatenAppleType = 0;
+        return t;
     }
 
     public void updateBombs(java.util.Random random) {
@@ -275,7 +310,7 @@ public class SnakeGame {
         UP, DOWN, LEFT, RIGHT
     }
 
-    //playEating and playExplosion used for sound effect
+    // playEating and playExplosion used for sound effect
     public void playEating(int i) {
 
         effects.setFile(i);

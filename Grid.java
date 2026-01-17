@@ -69,6 +69,9 @@ public class Grid extends Application {
     private int selectedRows;
     private int selectedCols;
     private int currentSpeed = 150;
+    private int slowTicksRemaining = 0;
+    private int slowMultiplier = 2; // 2x slower
+    private int baseSpeed;
 
     private Label classicScoreLabel, timedScoreLabel;
     private Label classicHighScoreLabel, timedHighScoreLabel;
@@ -218,6 +221,7 @@ public class Grid extends Application {
         difficultyScreen = new DifficultyScreen(
                 () -> {
                     currentSpeed = 250;
+                    baseSpeed = currentSpeed;
                     timeLeft = 45;
                     initialTime = timeLeft;
                     foodBonus = 10;
@@ -227,6 +231,7 @@ public class Grid extends Application {
                 },
                 () -> {
                     currentSpeed = 150;
+                    baseSpeed = currentSpeed;
                     timeLeft = 30;
                     initialTime = timeLeft;
                     foodBonus = 5;
@@ -236,6 +241,7 @@ public class Grid extends Application {
                 },
                 () -> {
                     currentSpeed = 75;
+                    baseSpeed = currentSpeed;
                     timeLeft = 10;
                     initialTime = timeLeft;
                     foodBonus = 2;
@@ -245,6 +251,7 @@ public class Grid extends Application {
                 },
                 () -> {
                     currentSpeed = 45;
+                    baseSpeed = currentSpeed;
                     timeLeft = 5;
                     initialTime = timeLeft;
                     foodBonus = 2;
@@ -702,6 +709,18 @@ public class Grid extends Application {
 
         loop = new Timeline(new KeyFrame(Duration.millis(speed), e -> {
             game.step();
+            int eaten = game.consumeLastEatenAppleType();
+            if (eaten == 2) { // APPLE_BLUE is 2 in your SnakeGame
+                slowTicksRemaining = 40; // how long slow lasts in ticks (tune)
+                applySpeed(baseSpeed * slowMultiplier);
+            }
+
+            if (slowTicksRemaining > 0) {
+                slowTicksRemaining--;
+                if (slowTicksRemaining == 0) {
+                    applySpeed(baseSpeed); // revert
+                }
+            }
             game.updateBombs(random);
             draw(game, cells, rows, columns);
 
@@ -765,6 +784,11 @@ public class Grid extends Application {
         classicHighScoreLabel.setText("High Score: 0");
         timedScoreLabel.setText("Score: 0");
         timedHighScoreLabel.setText("High Score: 0");
+    }
+
+    private void applySpeed(int newSpeed) {
+        currentSpeed = newSpeed;
+        startGame(currentSpeed); // simplest approach in your codebase
     }
 
     private void updateScoreLabel(int score) {
