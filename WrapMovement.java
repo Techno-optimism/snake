@@ -25,5 +25,4 @@ public class WrapMovement implements MovementType {
 
         return new Point(x, y);
     }
-
 }

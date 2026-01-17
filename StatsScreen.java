@@ -1,13 +1,9 @@
-import javafx.animation.FadeTransition;
 import javafx.animation.ScaleTransition;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.effect.BlurType;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
@@ -16,7 +12,6 @@ import javafx.util.Duration;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.animation.ScaleTransition;
 
 public class StatsScreen extends StackPane {
     private Label totalGamesLabel;

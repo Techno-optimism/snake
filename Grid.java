@@ -1,35 +1,24 @@
 import java.util.ArrayList;
 import java.util.Random;
-
 import javafx.application.Application;
 import javafx.scene.Scene;
-// import javafx.scene.control.skin.TextInputControlSkin.Direction;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.StrokeType;
 import javafx.stage.Stage;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
 import java.awt.Point;
-import java.util.ArrayDeque;
-import java.awt.Dimension;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Label;
-import javafx.scene.effect.DropShadow;
-import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.image.Image;
 import javafx.stage.Screen;
-import Audio.Sound;
 import java.io.*;
 
 public class Grid extends Application {
@@ -120,17 +109,6 @@ public class Grid extends Application {
         topBar.setAlignment(Pos.CENTER);
         topBar.setStyle("-fx-background-color: #8B4513; -fx-padding: 10;");
 
-        // // Shadow
-        // DropShadow shadow = new DropShadow();
-        // shadow.setColor(Color.BLACK);
-        // shadow.setRadius(5);
-        // classicScoreLabel.setEffect(shadow);
-        // classicHighScoreLabel.setEffect(shadow);
-        // timedScoreLabel.setEffect(shadow);
-        // timedHighScoreLabel.setEffect(shadow);
-        // timerLabel.setEffect(shadow);
-
-
         // Game area (StackPane)
         StackPane gameArea = new StackPane();
 
@@ -209,7 +187,6 @@ public class Grid extends Application {
                     if (!paused)
                         game.setDirection(SnakeGame.Direction.RIGHT);
                 }
-
                 default -> {
                 }
             }
@@ -406,11 +383,9 @@ public class Grid extends Application {
                     difficultyScreen.show();
                 });
 
-
         // Load previous high scores
         loadHighScores(); // Reads the file
         statsScreen.updateData(totalGamesPlayed, classicHighScore, timedHighScore);
-
 
         // Load images for snake and food
         try {
@@ -526,7 +501,7 @@ public class Grid extends Application {
                         dx = 1; // Head (lower x) on left edge pointing right, neck (higher x) on right edge
 
                     if (dy > 1)
-                        dy = -1; // Head (higher y) on botton edge pointing up, neck (lower y) on top edge (e.g.
+                        dy = -1; // Head (higher y) on bottom edge pointing up, neck (lower y) on top edge (e.g.
                                  // head y = 9, neck y = 0)
                     else if (dy < -1)
                         dy = 1; // Head (lower y) on top edge pointing down, neck (higher y) on bottom edge
@@ -655,7 +630,7 @@ public class Grid extends Application {
                 // when (dyNext = 6 - 5 = 1)
                 boolean isDown = (dyPrev == 1 || dyNext == 1); // +1 is down in the grid
 
-                // Correct body segnment based on neighbors
+                // Correct body segment based on neighbors
                 if (isLeft && isRight) {
                     cells[current.x][current.y].setFill(bodyHorizontal);
                 } else if (isUp && isDown) {
@@ -835,7 +810,7 @@ public class Grid extends Application {
 
     private void applySpeed(int newSpeed) {
         currentSpeed = newSpeed;
-        startGame(currentSpeed); // simplest approach in your codebase
+        startGame(currentSpeed);
     }
 
     private void updateScoreLabel(int score) {
