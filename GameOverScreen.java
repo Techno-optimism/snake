@@ -20,7 +20,7 @@ public class GameOverScreen extends StackPane {
 
     // Runnable is an interface that has a single method run()
     // This passes two actions to be performed on button clicks
-    // The contructor takes two Runnables: one for restart and one for quit
+    // The constructor takes two Runnables: one for restart and one for quit
     public GameOverScreen(Runnable onRestart, Runnable onMainMenu, Runnable onQuit) {
         // Overlay
         overlay = new Rectangle();
@@ -59,11 +59,11 @@ public class GameOverScreen extends StackPane {
         Button quitButton = createCustomButton("Give Up");
         quitButton.setOnAction(e -> onQuit.run());
 
-       menuLayout = new VBox(30);
-       menuLayout.setAlignment(Pos.CENTER);
-       menuLayout.getChildren().addAll(restartButton, mainMenuButton, quitButton);
-       menuLayout.setTranslateY(100);
-       menuLayout.setOpacity(0); // Start invisible to fade in on show
+        menuLayout = new VBox(30);
+        menuLayout.setAlignment(Pos.CENTER);
+        menuLayout.getChildren().addAll(restartButton, mainMenuButton, quitButton);
+        menuLayout.setTranslateY(100);
+        menuLayout.setOpacity(0); // Start invisible to fade in on show
 
         // Stack
         this.getChildren().addAll(

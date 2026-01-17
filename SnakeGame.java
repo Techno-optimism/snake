@@ -58,9 +58,6 @@ public class SnakeGame {
 
         snake = new ArrayDeque<>();
 
-        // Stop background music when game starts
-        // stopBKMusic(0);
-
         // Head
         snake.addFirst(new Point(cx, cy));
         // Body
@@ -261,7 +258,7 @@ public class SnakeGame {
             if (isOccupied(p))
                 continue;
             if (isNearHead(p))
-                continue; // <-- add this line
+                continue; 
             return p;
         }
         return null;

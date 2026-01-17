@@ -26,8 +26,8 @@ public class Sound {
             clip.open(ais);
             
             if (clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
-                 volumeControl = (FloatControl)clip.getControl(FloatControl.Type.MASTER_GAIN);
-                 volumeControl.setValue(currentVolume); 
+                volumeControl = (FloatControl)clip.getControl(FloatControl.Type.MASTER_GAIN);
+                volumeControl.setValue(currentVolume); 
             }
             
         } catch (Exception e) {
@@ -59,19 +59,4 @@ public class Sound {
             clip.stop();
         }
     }
-
-    // public void toggleMute() {
-    //     if (volumeControl == null) return;
-        
-    //     if (!mute) {
-    //         previousVolume = currentVolume;
-    //         currentVolume = -80.0f;
-    //         volumeControl.setValue(currentVolume);
-    //         mute = true;
-    //     } else {
-    //         currentVolume = previousVolume;
-    //         volumeControl.setValue(currentVolume);
-    //         mute = false;
-    //     }
-    // }
 }

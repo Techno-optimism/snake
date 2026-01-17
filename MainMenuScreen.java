@@ -7,7 +7,6 @@ import javafx.scene.effect.BlurType;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
@@ -16,7 +15,6 @@ import javafx.util.Duration;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.animation.ScaleTransition;
 import Audio.Sound;
 
 public class MainMenuScreen extends StackPane {
@@ -50,20 +48,6 @@ public class MainMenuScreen extends StackPane {
             this.getChildren().add(0, fallback);
         }
 
-        // ImageView titleImage = new ImageView();
-        // try {
-        //     titleImage.setImage(new Image("file:resources/snake_title.png"));
-        //     titleImage.setPreserveRatio(true);
-        //     titleImage.setFitWidth(400);
-        //     titleImage.setPreserveRatio(true);
-        //     titleImage.setSmooth(false);
-        //     getChildren().add(titleImage);
-        // } catch (Exception e) {
-        //     Label title = new Label("SNAKE");
-        //     title.setFont(Font.font("Arial", FontWeight.BOLD, 48));
-        //     getChildren().add(title);
-        // }
-
         try {
             island_bg    = new ImagePattern(new Image("file:resources/main_menu_island.png", 512, 512, true, false));
         } catch (Exception e) {
@@ -77,12 +61,6 @@ public class MainMenuScreen extends StackPane {
         overlay.widthProperty().bind(this.widthProperty());
         overlay.heightProperty().bind(this.heightProperty());
         overlay.setMouseTransparent(true);
-
-        // // When showing
-        // FadeTransition fadeInOverlay = new FadeTransition(Duration.seconds(0.5), overlay);
-        // fadeInOverlay.setToValue(0.25);
-        // fadeInOverlay.play();
-
 
         // Title
         title = new Label("SNAKE!");
