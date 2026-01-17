@@ -8,9 +8,13 @@ public class WrapMovement implements MovementType {
 
         switch (direction) {
             case UP -> y--;
+            case W -> y--;
             case DOWN -> y++;
+            case S -> y++;
             case LEFT -> x--;
+            case A -> x--;
             case RIGHT -> x++;
+            case D -> x++;
         }
 
         // Wrap around logic

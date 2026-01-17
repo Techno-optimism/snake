@@ -15,6 +15,7 @@ public class SimpleGrid extends Application {
     private final int screenSizes = 800;
     private final int usableScreenSizes = 750;
 
+    // Author: Emil & Alexander
     @Override
     public void start(Stage stage) {
         GridPane pane = new GridPane();
@@ -43,16 +44,22 @@ public class SimpleGrid extends Application {
 
         SimpleSnakeGame game = new SimpleSnakeGame(n, m);
 
+        // Author: Emil & Alexander
         scene.setOnKeyPressed(event -> {
             switch (event.getCode()) {
                 case UP -> game.setDirection(SimpleSnakeGame.Direction.UP);
+                case W -> game.setDirection(SimpleSnakeGame.Direction.UP);
                 case DOWN -> game.setDirection(SimpleSnakeGame.Direction.DOWN);
+                case S -> game.setDirection(SimpleSnakeGame.Direction.DOWN);
                 case LEFT -> game.setDirection(SimpleSnakeGame.Direction.LEFT);
+                case A -> game.setDirection(SimpleSnakeGame.Direction.LEFT);
                 case RIGHT -> game.setDirection(SimpleSnakeGame.Direction.RIGHT);
+                case D -> game.setDirection(SimpleSnakeGame.Direction.RIGHT);
                 default -> { }
             }
         });
 
+        // Author: Emil
         loop = new Timeline(
             new KeyFrame(Duration.millis(150), e -> {
                 game.step(); // Move snake one step
@@ -77,6 +84,7 @@ public class SimpleGrid extends Application {
     // #b71c1c (darker food color)
     // #c0a060 (grid color)
 
+    // Author: Emil
     private void draw(SimpleSnakeGame game, Rectangle[][] cells, int n, int m) {
         // Clear all cells to background color
         for (int col = 0; col < n; col++) {
@@ -86,11 +94,13 @@ public class SimpleGrid extends Application {
             }
         }
 
+        // Author: Emil
         // Draw snake
         for (Point p : game.getSnake()) {
             cells[p.x][p.y].setFill(Color.web("#1b5e20"));   
         }
 
+        // Author: Emil
         // Draw food
         Point f = game.getFood();
         if (f != null) {
@@ -101,6 +111,7 @@ public class SimpleGrid extends Application {
     public static int n;
     public static int m;
 
+    // Author: Alexander
     public static void main(String[] args) {
         n = 10;
         m = 10;

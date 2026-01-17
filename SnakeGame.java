@@ -307,7 +307,7 @@ public class SnakeGame {
     }
 
     public enum Direction {
-        UP, DOWN, LEFT, RIGHT
+        UP, DOWN, LEFT, RIGHT, W, S, A, D
     }
 
     // playEating and playExplosion used for sound effect

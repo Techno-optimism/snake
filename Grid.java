@@ -159,8 +159,14 @@ public class Grid extends Application {
 
             switch (event.getCode()) {
                 case SPACE -> togglePause();
+                case ESCAPE -> togglePause();
+                case P -> togglePause();
 
                 case UP -> {
+                    if (!paused)
+                        game.setDirection(SnakeGame.Direction.UP);
+                }
+                case W -> {
                     if (!paused)
                         game.setDirection(SnakeGame.Direction.UP);
                 }
@@ -168,11 +174,23 @@ public class Grid extends Application {
                     if (!paused)
                         game.setDirection(SnakeGame.Direction.DOWN);
                 }
+                case S -> {
+                    if (!paused)
+                        game.setDirection(SnakeGame.Direction.DOWN);
+                }
                 case LEFT -> {
                     if (!paused)
                         game.setDirection(SnakeGame.Direction.LEFT);
                 }
+                case A -> {
+                    if (!paused)
+                        game.setDirection(SnakeGame.Direction.LEFT);
+                }
                 case RIGHT -> {
+                    if (!paused)
+                        game.setDirection(SnakeGame.Direction.RIGHT);
+                }
+                case D -> {
                     if (!paused)
                         game.setDirection(SnakeGame.Direction.RIGHT);
                 }
