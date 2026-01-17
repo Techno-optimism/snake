@@ -7,14 +7,16 @@ public class Sound {
     Clip clip;
     URL[] soundURL = new URL[30];
     FloatControl volumeControl; 
-    //boolean mute = false;
-    //float previousVolume = 0;
     float currentVolume = -5.0f;
 
     public Sound() {
         soundURL[0] = getClass().getResource("background_music.wav"); 
-        soundURL[1] = getClass().getResource("eat_apple.wav");
-        soundURL[2] = getClass().getResource("explosion.wav");
+        soundURL[1] = getClass().getResource("eat_apple_red.wav");
+        soundURL[2] = getClass().getResource("eat_apple_blue.wav");
+        soundURL[3] = getClass().getResource("eat_apple_purple.wav");
+        soundURL[4] = getClass().getResource("explosion.wav");
+        soundURL[5] = getClass().getResource("death.wav");
+        soundURL[6] = getClass().getResource("playback.wav");
     }
 
     public void setFile(int i) {
@@ -57,7 +59,7 @@ public class Sound {
             clip.stop();
         }
     }
-   
+
     // public void toggleMute() {
     //     if (volumeControl == null) return;
         

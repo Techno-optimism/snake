@@ -140,7 +140,6 @@ public class MainMenuScreen extends StackPane {
 
         // Play background music
         playBKMusic(0);
-        music.setVolume(-5);
     }
 
     public Sound getMusic() {

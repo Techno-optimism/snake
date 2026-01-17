@@ -218,6 +218,8 @@ public class Grid extends Application {
         gameOverScreen = new GameOverScreen(
                 // On restart click
                 () -> {
+                    game.stopAllEffects();
+
                     game.reset();
                     game.setBombsEnabled(bombsEnabled);
                     game.setBombTTL(bombTTL);
@@ -239,6 +241,8 @@ public class Grid extends Application {
                 },
                 // On exit to main menu click
                 () -> {
+                    game.stopAllEffects();
+                    
                     resetScoreLabels(); // Resets all labels
                     game.reset();
                     // hide grid and clear mode/ui
@@ -744,15 +748,15 @@ public class Grid extends Application {
         loop = new Timeline(new KeyFrame(Duration.millis(speed), e -> {
             game.step();
             int eaten = game.consumeLastEatenAppleType();
-            if (eaten == 2) { // APPLE_BLUE is 2 in your SnakeGame
-                slowTicksRemaining = 40; // how long slow lasts in ticks (tune)
+            if (eaten == 2 || eaten == 3) { // APPLE_BLUE is 2 and APPLE_PURPLE is 3
+                slowTicksRemaining = 12; // How long slowness lasts in ticks
                 applySpeed(baseSpeed * slowMultiplier);
             }
 
             if (slowTicksRemaining > 0) {
                 slowTicksRemaining--;
                 if (slowTicksRemaining == 0) {
-                    applySpeed(baseSpeed); // revert
+                    applySpeed(baseSpeed); // Revert
                 }
             }
             game.updateBombs(random);
