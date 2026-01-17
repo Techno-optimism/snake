@@ -20,6 +20,7 @@ import java.awt.Dimension;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Label;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -29,6 +30,7 @@ import javafx.scene.paint.ImagePattern;
 import javafx.scene.image.Image;
 import javafx.stage.Screen;
 import Audio.Sound;
+import java.io.*;
 
 public class Grid extends Application {
 
@@ -87,6 +89,8 @@ public class Grid extends Application {
     private ImagePattern bodyHorizontal, bodyVertical, bodyUpRight, bodyUpLeft, bodyDownRight, bodyDownLeft;
     private ImagePattern tailUp, tailDown, tailLeft, tailRight;
 
+    private static final String SAVE_FILE = "snake_save.dat";
+
     private final Random random = new Random();
 
     @Override
@@ -98,23 +102,34 @@ public class Grid extends Application {
         // --------------------------
         // Classic
         classicScoreLabel = new Label("Score: 0");
-        classicScoreLabel.setStyle("-fx-font-family: 'Comic Sans MS'; -fx-font-size: 20px; -fx-text-fill: black;");
+        classicScoreLabel.setStyle("-fx-font-family: 'Comic Sans MS'; -fx-font-size: 20px; -fx-text-fill: white;");
         classicHighScoreLabel = new Label("High Score: 0");
-        classicHighScoreLabel.setStyle("-fx-font-family: 'Comic Sans MS'; -fx-font-size: 20px; -fx-text-fill: black;");
+        classicHighScoreLabel.setStyle("-fx-font-family: 'Comic Sans MS'; -fx-font-size: 20px; -fx-text-fill: white;");
 
         // Timed
         timedScoreLabel = new Label("Score: 0");
-        timedScoreLabel.setStyle("-fx-font-family: 'Comic Sans MS'; -fx-font-size: 20px; -fx-text-fill: black;");
+        timedScoreLabel.setStyle("-fx-font-family: 'Comic Sans MS'; -fx-font-size: 20px; -fx-text-fill: white;");
         timedHighScoreLabel = new Label("High Score: 0");
-        timedHighScoreLabel.setStyle("-fx-font-family: 'Comic Sans MS'; -fx-font-size: 20px; -fx-text-fill: black;");
+        timedHighScoreLabel.setStyle("-fx-font-family: 'Comic Sans MS'; -fx-font-size: 20px; -fx-text-fill: white;");
         timerLabel = new Label("Time left: 0");
-        timerLabel.setStyle("-fx-font-family: 'Comic Sans MS'; -fx-font-size: 20px; -fx-text-fill: black;");
+        timerLabel.setStyle("-fx-font-family: 'Comic Sans MS'; -fx-font-size: 20px; -fx-text-fill: white;");
 
         // Top bar container
         topBar = new HBox(10);
         topBar.setPrefHeight(50);
         topBar.setAlignment(Pos.CENTER);
-        topBar.setStyle("-fx-background-color: white; -fx-padding: 10;");
+        topBar.setStyle("-fx-background-color: #8B4513; -fx-padding: 10;");
+
+        // // Shadow
+        // DropShadow shadow = new DropShadow();
+        // shadow.setColor(Color.BLACK);
+        // shadow.setRadius(5);
+        // classicScoreLabel.setEffect(shadow);
+        // classicHighScoreLabel.setEffect(shadow);
+        // timedScoreLabel.setEffect(shadow);
+        // timedHighScoreLabel.setEffect(shadow);
+        // timerLabel.setEffect(shadow);
+
 
         // Game area (StackPane)
         StackPane gameArea = new StackPane();
@@ -240,9 +255,9 @@ public class Grid extends Application {
                 () -> {
                     currentSpeed = 250;
                     baseSpeed = currentSpeed;
-                    timeLeft = 45;
+                    timeLeft = 30;
                     initialTime = timeLeft;
-                    foodBonus = 10;
+                    foodBonus = 5;
                     bombsEnabled = false;
                     bombTTL = 0;
                     movementTypeScreen.show();
@@ -250,9 +265,9 @@ public class Grid extends Application {
                 () -> {
                     currentSpeed = 150;
                     baseSpeed = currentSpeed;
-                    timeLeft = 30;
+                    timeLeft = 15;
                     initialTime = timeLeft;
-                    foodBonus = 5;
+                    foodBonus = 3;
                     bombsEnabled = false;
                     bombTTL = 0;
                     movementTypeScreen.show();
@@ -270,7 +285,7 @@ public class Grid extends Application {
                 () -> {
                     currentSpeed = 45;
                     baseSpeed = currentSpeed;
-                    timeLeft = 5;
+                    timeLeft = 7;
                     initialTime = timeLeft;
                     foodBonus = 2;
                     bombsEnabled = true;
@@ -390,6 +405,12 @@ public class Grid extends Application {
                 () -> {
                     difficultyScreen.show();
                 });
+
+
+        // Load previous high scores
+        loadHighScores(); // Reads the file
+        statsScreen.updateData(totalGamesPlayed, classicHighScore, timedHighScore);
+
 
         // Load images for snake and food
         try {
@@ -686,7 +707,7 @@ public class Grid extends Application {
 
         StackPane header = new StackPane();
         header.setPrefHeight(50);
-        header.setStyle("-fx-background-color: white; -fx-padding: 0 20 0 20;");
+        header.setStyle("-fx-background-color: #8B4513; -fx-padding: 0 20 0 20;");
 
         if (gameMode == MODE_CLASSIC) {
             // Right side: Score Box
@@ -771,8 +792,21 @@ public class Grid extends Application {
             if (game.isGameOver()) {
                 gameOverScreen.show();
                 int finalScore = game.getSnake().size() - 2;
+
+                // Increment games played
+                totalGamesPlayed++;
+
+                // Check for high score
                 updateHighScore(finalScore);
-                totalGamesPlayed++; // For stats screen
+
+                // Force save regardless of high score
+                saveHighScores();
+
+                // Update stats screen
+                if (statsScreen != null) {
+                    statsScreen.updateData(totalGamesPlayed, classicHighScore, timedHighScore);
+                }
+
                 loop.stop();
             }
         }));
@@ -847,13 +881,25 @@ public class Grid extends Application {
             highLabel.setText("High Score: " + score);
         }
 
+        boolean newRecord = false;
+
         if (gameMode == MODE_CLASSIC) {
             if (score > classicHighScore)
                 classicHighScore = score;
+                newRecord = true;
         } else if (gameMode == MODE_TIMED) {
-            if (score > timedHighScore)
+            if (score > timedHighScore) {
                 timedHighScore = score;
+                newRecord = true;
+            }
         }
+
+        if (newRecord) {
+            saveHighScores(); // Save to file
+            // Update stats screen
+            statsScreen.updateData(totalGamesPlayed, classicHighScore, timedHighScore);
+        }
+
     }
 
     public void buildGrid(int newRows, int newColumns) {
@@ -903,6 +949,30 @@ public class Grid extends Application {
                 gameGrid.add(cell, x, y);
                 cells[x][y] = cell;
             }
+        }
+    }
+
+    private void saveHighScores() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(SAVE_FILE))) {
+            // Data is written on separate lines
+            writer.write(classicHighScore + "\n");
+            writer.write(timedHighScore + "\n");
+            writer.write(totalGamesPlayed + "\n");
+        } catch (IOException e) {
+            System.out.println("Could not save high scores."); // Error check
+        }
+    }
+
+    private void loadHighScores() {
+        File file = new File(SAVE_FILE);
+        if (!file.exists()) return; // Start at 0
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            classicHighScore = Integer.parseInt(reader.readLine());
+            timedHighScore = Integer.parseInt(reader.readLine());
+            totalGamesPlayed = Integer.parseInt(reader.readLine());
+        } catch (Exception e) {
+            System.out.println("Could not load high scores"); // Error check
         }
     }
 

@@ -24,6 +24,7 @@ public class MainMenuScreen extends StackPane {
     private VBox menuLayout;
     private Rectangle overlay;
     private ImagePattern island_bg;
+    private Label highScoreDisplay;
 
     Sound music = new Sound();
     Sound effects = new Sound();
@@ -83,6 +84,8 @@ public class MainMenuScreen extends StackPane {
         // fadeInOverlay.setToValue(0.25);
         // fadeInOverlay.play();
 
+
+        // Title
         title = new Label("SNAKE!");
         title.setFont(Font.font("Comic Sans MS", FontWeight.BOLD, 80));
         title.setTextFill(Color.rgb(105, 199, 22, 1));
