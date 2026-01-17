@@ -24,7 +24,6 @@ public class MainMenuScreen extends StackPane {
     private VBox menuLayout;
     private Rectangle overlay;
     private ImagePattern island_bg;
-    private Label highScoreDisplay;
 
     Sound music = new Sound();
     Sound effects = new Sound();

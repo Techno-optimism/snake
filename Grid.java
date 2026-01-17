@@ -474,11 +474,6 @@ public class Grid extends Application {
         stage.show();
     }
 
-    // #1b5e20 (snake color)
-    // #ff5555 (bright food color)
-    // #b71c1c (darker food color)
-    // #c0a060 (grid color)
-
     // Used to clear the grid and draw the game state onto the grid each tick
     private void setGameGridVisible(boolean visible) {
         gameGrid.setVisible(visible);
@@ -979,7 +974,4 @@ public class Grid extends Application {
     public static void main(String[] args) {
         launch(args);
     }
-
-    // #c0a060" stroke color
-    // #f4c064 background color
 }

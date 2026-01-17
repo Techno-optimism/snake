@@ -87,10 +87,6 @@ public class PauseScreen extends StackPane {
         // Add everything to the layout
         layout.getChildren().addAll(icon, musicLabel, musicSlider, effectsLabel, effectsSlider, mainMenuButton);
 
-
-        // Consume mouse events so you can't click anything behind the pause screen
-        // addEventFilter(MouseEvent.ANY, e -> e.consume());
-
         getChildren().addAll(dim, layout);
     }
 
