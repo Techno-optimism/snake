@@ -94,19 +94,36 @@ public class SnakeGame {
         Point head = snake.peekFirst();
         Point newHead = movementType.calculateNextHead(head, direction, width, height);
 
-        // Wall collision
+        // Wall collision (always checked first)
         if (newHead == null) {
             gameOver = true;
             return;
         }
 
+        // Check if the snake is about to eat food
+        boolean eatingFood = newHead.equals(food);
+
+        // If not eating and not growing from previous food, the tail is removed temporarily to check if new head position is safe
+        // This essentially removes the tail from the board making its grid coordinate empty
+        Point oldTail = null;
+        boolean willGrow = (eatingFood || pendingGrowth > 0);
+
+        if (!willGrow) {
+            oldTail = snake.removeLast(); // Temporary removal
+        }
+
+        // Now self-collision is checked
+        // Since the tail is free, it can move there (move in circles when length = 4)
         // Self collision
         if (snake.contains(newHead)) {
+            if (oldTail != null) {
+                snake.addLast(oldTail);
+            }
             gameOver = true;
             return;
         }
 
-        // Normal move: add head
+        // Move is safe (add head)
         snake.addFirst(newHead);
 
         if (bombsEnabled) {
@@ -120,35 +137,34 @@ public class SnakeGame {
         }
 
         // Food
-        if (newHead.equals(food)) {
+        if (eatingFood) {
             ateFood = true;
+            lastEatenAppleType = appleType;
 
-            lastEatenAppleType = appleType; // IMPORTANT: save BEFORE spawnFood changes appleType
-
-            // growth amount: red=1, purple=2, blue=1 (or whatever you want)
             if (appleType == APPLE_PURPLE)
                 pendingGrowth += 2;
             else
                 pendingGrowth += 1;
-            // Tail isn't removed, snake grows
-            spawnFood();
-            // Sound effect for eating food plays
+            
+            // Sound effect
             playEating(1);
-        }
-        if (pendingGrowth > 0) {
-            pendingGrowth--; // we keep tail => snake grows by 1 this step
-        } else {
-            // Move without growing, remove tail
-            snake.removeLast();
+
+            // Spawn new food
+            spawnFood();
         }
 
+        // Decrement pendingGrowth if it was used
+        if (willGrow && pendingGrowth > 0) {
+            pendingGrowth--;
+        }
+
+        // Handle food TTL
         if (foodTtl > 0) {
             foodTtl--;
             if (foodTtl == 0) {
                 spawnFood(); // despawn and respawn
             }
         }
-
     }
 
     public Deque<Point> getSnake() {
