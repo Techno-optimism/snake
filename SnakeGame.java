@@ -148,6 +148,7 @@ public class SnakeGame {
             for (Bomb b : bombs) {
                 if (b.pos.equals(newHead)) { // or snake.peekFirst()
                     playEffect(BOMB);
+                    playEffect(DEATH);
                     gameOver = true;
                     return; // stop this step immediately
                 }
