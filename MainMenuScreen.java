@@ -71,7 +71,7 @@ public class MainMenuScreen extends StackPane {
         // Glow effect
         DropShadow glow = new DropShadow();
         glow.setColor(Color.WHITE);
-        glow.setRadius(25);
+        glow.setRadius(35);
         glow.setSpread(0.1);
         glow.setBlurType(BlurType.GAUSSIAN);
         title.setEffect(glow);

@@ -128,6 +128,7 @@ public class SnakeGame {
         // Since the tail is free, it can move there (move in circles when length = 4)
         // Self collision
         if (snake.contains(newHead)) {
+            // Puts the tail back for visual consistency
             if (oldTail != null) {
                 snake.addLast(oldTail);
             }

@@ -19,7 +19,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.image.Image;
 import javafx.stage.Screen;
-import java.io.*;
+import java.io.*;   
 
 public class Grid extends Application {
 
